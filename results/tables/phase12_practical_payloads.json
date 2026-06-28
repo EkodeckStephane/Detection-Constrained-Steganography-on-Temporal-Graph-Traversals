@@ -1,0 +1,214 @@
+{
+  "campaign": "phase12_practical_payloads",
+  "source": "results/tables/phase12_capacity_detectability_summary.csv",
+  "payloads": [
+    {
+      "payload": "control_command",
+      "bits": 8
+    },
+    {
+      "payload": "session_marker",
+      "bits": 32
+    },
+    {
+      "payload": "compact_metadata",
+      "bits": 64
+    },
+    {
+      "payload": "short_capability_token",
+      "bits": 128
+    }
+  ],
+  "datasets": {
+    "geolife_cells": [
+      {
+        "dataset": "geolife_cells",
+        "operating_point": "balanced",
+        "max_public_auc": 0.50006862,
+        "bits_per_transition": 0.0007,
+        "payload": "control_command",
+        "payload_bits": 8,
+        "required_transitions": 11429
+      },
+      {
+        "dataset": "geolife_cells",
+        "operating_point": "balanced",
+        "max_public_auc": 0.50006862,
+        "bits_per_transition": 0.0007,
+        "payload": "session_marker",
+        "payload_bits": 32,
+        "required_transitions": 45715
+      },
+      {
+        "dataset": "geolife_cells",
+        "operating_point": "balanced",
+        "max_public_auc": 0.50006862,
+        "bits_per_transition": 0.0007,
+        "payload": "compact_metadata",
+        "payload_bits": 64,
+        "required_transitions": 91429
+      },
+      {
+        "dataset": "geolife_cells",
+        "operating_point": "balanced",
+        "max_public_auc": 0.50006862,
+        "bits_per_transition": 0.0007,
+        "payload": "short_capability_token",
+        "payload_bits": 128,
+        "required_transitions": 182858
+      }
+    ],
+    "lastfm": [
+      {
+        "dataset": "lastfm",
+        "operating_point": "two_bit_probe",
+        "max_public_auc": 0.5247583549999999,
+        "bits_per_transition": 0.0536,
+        "payload": "control_command",
+        "payload_bits": 8,
+        "required_transitions": 150
+      },
+      {
+        "dataset": "lastfm",
+        "operating_point": "two_bit_probe",
+        "max_public_auc": 0.5247583549999999,
+        "bits_per_transition": 0.0536,
+        "payload": "session_marker",
+        "payload_bits": 32,
+        "required_transitions": 598
+      },
+      {
+        "dataset": "lastfm",
+        "operating_point": "two_bit_probe",
+        "max_public_auc": 0.5247583549999999,
+        "bits_per_transition": 0.0536,
+        "payload": "compact_metadata",
+        "payload_bits": 64,
+        "required_transitions": 1195
+      },
+      {
+        "dataset": "lastfm",
+        "operating_point": "two_bit_probe",
+        "max_public_auc": 0.5247583549999999,
+        "bits_per_transition": 0.0536,
+        "payload": "short_capability_token",
+        "payload_bits": 128,
+        "required_transitions": 2389
+      }
+    ],
+    "mooc": [
+      {
+        "dataset": "mooc",
+        "operating_point": "open_rank",
+        "max_public_auc": 0.523801315,
+        "bits_per_transition": 0.0254,
+        "payload": "control_command",
+        "payload_bits": 8,
+        "required_transitions": 315
+      },
+      {
+        "dataset": "mooc",
+        "operating_point": "open_rank",
+        "max_public_auc": 0.523801315,
+        "bits_per_transition": 0.0254,
+        "payload": "session_marker",
+        "payload_bits": 32,
+        "required_transitions": 1260
+      },
+      {
+        "dataset": "mooc",
+        "operating_point": "open_rank",
+        "max_public_auc": 0.523801315,
+        "bits_per_transition": 0.0254,
+        "payload": "compact_metadata",
+        "payload_bits": 64,
+        "required_transitions": 2520
+      },
+      {
+        "dataset": "mooc",
+        "operating_point": "open_rank",
+        "max_public_auc": 0.523801315,
+        "bits_per_transition": 0.0254,
+        "payload": "short_capability_token",
+        "payload_bits": 128,
+        "required_transitions": 5040
+      }
+    ],
+    "t_drive_cells": [
+      {
+        "dataset": "t_drive_cells",
+        "operating_point": "balanced",
+        "max_public_auc": 0.56560611,
+        "bits_per_transition": 0.1106,
+        "payload": "control_command",
+        "payload_bits": 8,
+        "required_transitions": 73
+      },
+      {
+        "dataset": "t_drive_cells",
+        "operating_point": "balanced",
+        "max_public_auc": 0.56560611,
+        "bits_per_transition": 0.1106,
+        "payload": "session_marker",
+        "payload_bits": 32,
+        "required_transitions": 290
+      },
+      {
+        "dataset": "t_drive_cells",
+        "operating_point": "balanced",
+        "max_public_auc": 0.56560611,
+        "bits_per_transition": 0.1106,
+        "payload": "compact_metadata",
+        "payload_bits": 64,
+        "required_transitions": 579
+      },
+      {
+        "dataset": "t_drive_cells",
+        "operating_point": "balanced",
+        "max_public_auc": 0.56560611,
+        "bits_per_transition": 0.1106,
+        "payload": "short_capability_token",
+        "payload_bits": 128,
+        "required_transitions": 1158
+      }
+    ],
+    "tgbl-wiki": [
+      {
+        "dataset": "tgbl-wiki",
+        "operating_point": "open_rank",
+        "max_public_auc": 0.59295472,
+        "bits_per_transition": 0.1338,
+        "payload": "control_command",
+        "payload_bits": 8,
+        "required_transitions": 60
+      },
+      {
+        "dataset": "tgbl-wiki",
+        "operating_point": "open_rank",
+        "max_public_auc": 0.59295472,
+        "bits_per_transition": 0.1338,
+        "payload": "session_marker",
+        "payload_bits": 32,
+        "required_transitions": 240
+      },
+      {
+        "dataset": "tgbl-wiki",
+        "operating_point": "open_rank",
+        "max_public_auc": 0.59295472,
+        "bits_per_transition": 0.1338,
+        "payload": "compact_metadata",
+        "payload_bits": 64,
+        "required_transitions": 479
+      },
+      {
+        "dataset": "tgbl-wiki",
+        "operating_point": "open_rank",
+        "max_public_auc": 0.59295472,
+        "bits_per_transition": 0.1338,
+        "payload": "short_capability_token",
+        "payload_bits": 128,
+        "required_transitions": 957
+      }
+    ]
+  }
+}

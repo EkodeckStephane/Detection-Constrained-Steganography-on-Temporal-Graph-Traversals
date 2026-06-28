@@ -1,0 +1,160 @@
+{
+  "campaign": "phase12_cover_sensitivity",
+  "sources": [
+    "results/tables/phase4_temporal_cover_model.csv",
+    "results/tables/phase4_cover_model_baseline.csv",
+    "results/tables/phase12_capacity_detectability_summary.csv"
+  ],
+  "correlations": {
+    "top1_accuracy": {
+      "with_conservative_bits": 0.39999999999999997,
+      "with_conservative_auc": 0.39999999999999997,
+      "with_best_budget_bits": -0.09999999999999999
+    },
+    "mean_nll_bits": {
+      "with_conservative_bits": -0.19999999999999998,
+      "with_conservative_auc": -0.19999999999999998,
+      "with_best_budget_bits": 0.0
+    },
+    "perplexity": {
+      "with_conservative_bits": -0.19999999999999998,
+      "with_conservative_auc": -0.19999999999999998,
+      "with_best_budget_bits": 0.0
+    },
+    "unseen_destination_fraction": {
+      "with_conservative_bits": -0.7,
+      "with_conservative_auc": -0.7,
+      "with_best_budget_bits": -0.7
+    }
+  },
+  "records": [
+    {
+      "dataset": "tgbl-wiki",
+      "mean_nll_bits": 6.380046106875474,
+      "model_family": "source_only_backoff",
+      "perplexity": 83.28854051178457,
+      "rows": 23621,
+      "split": "test",
+      "top1_accuracy": 0.4059099953431269,
+      "unseen_destination_fraction": 0.1301807713475297,
+      "conservative_bits_per_transition": 0.0501,
+      "conservative_embed_rate": 0.0501,
+      "conservative_max_public_auc": 0.539597485,
+      "best_budget_point": "open_rank",
+      "best_budget_bits_per_transition": 0.1338,
+      "best_budget_max_public_auc": 0.59295472
+    },
+    {
+      "dataset": "mooc",
+      "mean_nll_bits": 10.305054622016508,
+      "model_family": "source_only_backoff",
+      "perplexity": 1265.116582212543,
+      "rows": 61762,
+      "split": "test",
+      "top1_accuracy": 0.0153654350571548,
+      "unseen_destination_fraction": 0.0289822220783005,
+      "conservative_bits_per_transition": 0.0011,
+      "conservative_embed_rate": 0.0011,
+      "conservative_max_public_auc": 0.5009990750000001,
+      "best_budget_point": "open_rank",
+      "best_budget_bits_per_transition": 0.0254,
+      "best_budget_max_public_auc": 0.523801315
+    },
+    {
+      "dataset": "lastfm",
+      "mean_nll_bits": 12.37805208919109,
+      "model_family": "source_only_backoff",
+      "perplexity": 5323.104189558163,
+      "rows": 193965,
+      "split": "test",
+      "top1_accuracy": 0.0096357590286907,
+      "unseen_destination_fraction": 0.2017374268553605,
+      "conservative_bits_per_transition": 0.0,
+      "conservative_embed_rate": 0.0,
+      "conservative_max_public_auc": 0.5000000099999999,
+      "best_budget_point": "two_bit_probe",
+      "best_budget_bits_per_transition": 0.0536,
+      "best_budget_max_public_auc": 0.5247583549999999
+    },
+    {
+      "dataset": "tgbl-wiki",
+      "mean_nll_bits": 4.345018102245915,
+      "model_family": "source_previous_destination_backoff",
+      "perplexity": 20.32267071815272,
+      "rows": 23621,
+      "split": "test",
+      "top1_accuracy": 0.4308030989373862,
+      "unseen_destination_fraction": 0.1603657762160789,
+      "conservative_bits_per_transition": 0.0501,
+      "conservative_embed_rate": 0.0501,
+      "conservative_max_public_auc": 0.539597485,
+      "best_budget_point": "open_rank",
+      "best_budget_bits_per_transition": 0.1338,
+      "best_budget_max_public_auc": 0.59295472
+    },
+    {
+      "dataset": "mooc",
+      "mean_nll_bits": 10.534243395476118,
+      "model_family": "source_previous_destination_backoff",
+      "perplexity": 1482.9388523784455,
+      "rows": 61762,
+      "split": "test",
+      "top1_accuracy": 0.0117386095009876,
+      "unseen_destination_fraction": 0.6672711375926945,
+      "conservative_bits_per_transition": 0.0011,
+      "conservative_embed_rate": 0.0011,
+      "conservative_max_public_auc": 0.5009990750000001,
+      "best_budget_point": "open_rank",
+      "best_budget_bits_per_transition": 0.0254,
+      "best_budget_max_public_auc": 0.523801315
+    },
+    {
+      "dataset": "lastfm",
+      "mean_nll_bits": 6.836308565823558,
+      "model_family": "source_previous_destination_backoff",
+      "perplexity": 114.2704500738248,
+      "rows": 100000,
+      "split": "test",
+      "top1_accuracy": 0.00649,
+      "unseen_destination_fraction": 0.44997,
+      "conservative_bits_per_transition": 0.0,
+      "conservative_embed_rate": 0.0,
+      "conservative_max_public_auc": 0.5000000099999999,
+      "best_budget_point": "two_bit_probe",
+      "best_budget_bits_per_transition": 0.0536,
+      "best_budget_max_public_auc": 0.5247583549999999
+    },
+    {
+      "dataset": "geolife_cells",
+      "mean_nll_bits": 3.0313904691609173,
+      "model_family": "source_previous_destination_backoff",
+      "perplexity": 8.175973210675371,
+      "rows": 99961,
+      "split": "test",
+      "top1_accuracy": 0.6505036964416122,
+      "unseen_destination_fraction": 0.3476355778753714,
+      "conservative_bits_per_transition": 0.0005,
+      "conservative_embed_rate": 0.0005,
+      "conservative_max_public_auc": 0.500015175,
+      "best_budget_point": "balanced",
+      "best_budget_bits_per_transition": 0.0007,
+      "best_budget_max_public_auc": 0.50006862
+    },
+    {
+      "dataset": "t_drive_cells",
+      "mean_nll_bits": 4.404601716701754,
+      "model_family": "source_previous_destination_backoff",
+      "perplexity": 21.179574736303213,
+      "rows": 97639,
+      "split": "test",
+      "top1_accuracy": 0.3232724628478374,
+      "unseen_destination_fraction": 0.3283421583588525,
+      "conservative_bits_per_transition": 0.0316,
+      "conservative_embed_rate": 0.0316,
+      "conservative_max_public_auc": 0.522012975,
+      "best_budget_point": "balanced",
+      "best_budget_bits_per_transition": 0.1106,
+      "best_budget_max_public_auc": 0.56560611
+    }
+  ]
+}

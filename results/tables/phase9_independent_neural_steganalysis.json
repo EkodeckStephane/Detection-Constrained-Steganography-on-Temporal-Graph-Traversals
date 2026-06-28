@@ -1,0 +1,75 @@
+{
+  "campaign": "phase9_independent_neural_steganalysis",
+  "date": "2026-06-26",
+  "detectors": {
+    "tgbl-wiki": {
+      "temporal_graph_eve": {
+        "auc": 0.5010427343749999,
+        "balanced_accuracy": 0.5000625000000001,
+        "eer": 0.500875
+      },
+      "sequence_transformer_eve": {
+        "auc": 0.5135636484375,
+        "balanced_accuracy": 0.5069375,
+        "eer": 0.49250000000000005
+      }
+    },
+    "mooc": {
+      "temporal_graph_eve": {
+        "auc": 0.5001866484374999,
+        "balanced_accuracy": 0.5001875,
+        "eer": 0.499875
+      },
+      "sequence_transformer_eve": {
+        "auc": 0.4998985156250001,
+        "balanced_accuracy": 0.4999375,
+        "eer": 0.5000625
+      }
+    },
+    "lastfm": {
+      "temporal_graph_eve": {
+        "auc": 0.4999999921875001,
+        "balanced_accuracy": 0.5,
+        "eer": 0.5
+      },
+      "sequence_transformer_eve": {
+        "auc": 0.49999999999999994,
+        "balanced_accuracy": 0.5,
+        "eer": 0.5
+      }
+    },
+    "geolife_cells": {
+      "temporal_graph_eve": {
+        "auc": 0.5,
+        "balanced_accuracy": 0.5,
+        "eer": 0.5
+      },
+      "sequence_transformer_eve": {
+        "auc": 0.49999999999999994,
+        "balanced_accuracy": 0.5,
+        "eer": 0.5
+      }
+    },
+    "t_drive_cells": {
+      "temporal_graph_eve": {
+        "auc": 0.5003308359374999,
+        "balanced_accuracy": 0.4999375,
+        "eer": 0.4995625
+      },
+      "sequence_transformer_eve": {
+        "auc": 0.50016834375,
+        "balanced_accuracy": 0.5015000000000001,
+        "eer": 0.5015
+      }
+    }
+  },
+  "training": {
+    "context_length": 8,
+    "embedding_dim": 24,
+    "hidden_dim": 48,
+    "epochs": 2,
+    "batch_size": 256,
+    "learning_rate": 0.003,
+    "seed": 20260626
+  }
+}

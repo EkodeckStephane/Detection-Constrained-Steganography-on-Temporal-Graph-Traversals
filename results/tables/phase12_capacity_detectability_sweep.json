@@ -1,0 +1,683 @@
+{
+  "campaign": "phase12_capacity_detectability_sweep",
+  "source_config": "experiments/real_world/phase7_steganalysis.yaml",
+  "operating_points": [
+    {
+      "point": "ultra_stealth",
+      "max_bits_per_transition": 1,
+      "max_local_total_variation": 0.1,
+      "max_local_kl_bits": 0.15,
+      "min_entropy_bits": 1.0,
+      "max_encoded_rank_fraction": 0.25
+    },
+    {
+      "point": "conservative",
+      "max_bits_per_transition": 1,
+      "max_local_total_variation": 0.35,
+      "max_local_kl_bits": 0.6,
+      "min_entropy_bits": 0.5,
+      "max_encoded_rank_fraction": 0.5
+    },
+    {
+      "point": "balanced",
+      "max_bits_per_transition": 1,
+      "max_local_total_variation": 0.5,
+      "max_local_kl_bits": 0.9,
+      "min_entropy_bits": 0.25,
+      "max_encoded_rank_fraction": 0.75
+    },
+    {
+      "point": "open_rank",
+      "max_bits_per_transition": 1,
+      "max_local_total_variation": 0.75,
+      "max_local_kl_bits": 1.25,
+      "min_entropy_bits": 0.0,
+      "max_encoded_rank_fraction": 1.0
+    },
+    {
+      "point": "two_bit_probe",
+      "max_bits_per_transition": 2,
+      "max_local_total_variation": 0.75,
+      "max_local_kl_bits": 1.5,
+      "min_entropy_bits": 0.0,
+      "max_encoded_rank_fraction": 1.0
+    }
+  ],
+  "datasets": {
+    "tgbl-wiki": [
+      {
+        "dataset": "tgbl-wiki",
+        "point": "ultra_stealth",
+        "bits_per_transition": 0.0045,
+        "embed_rate": 0.0045,
+        "max_public_auc": 0.504487485,
+        "capacity_at_auc_060": 0.0045,
+        "detectors": {
+          "linear": {
+            "auc": 0.504272865,
+            "balanced_accuracy": 0.50215,
+            "eer": 0.49785
+          },
+          "forest": {
+            "auc": 0.504487485,
+            "balanced_accuracy": 0.50225,
+            "eer": 0.49775
+          },
+          "mlp": {
+            "auc": 0.503800705,
+            "balanced_accuracy": 0.5022,
+            "eer": 0.49785
+          }
+        }
+      },
+      {
+        "dataset": "tgbl-wiki",
+        "point": "conservative",
+        "bits_per_transition": 0.0501,
+        "embed_rate": 0.0501,
+        "max_public_auc": 0.539597485,
+        "capacity_at_auc_060": 0.0501,
+        "detectors": {
+          "linear": {
+            "auc": 0.5236901700000001,
+            "balanced_accuracy": 0.513,
+            "eer": 0.48765000000000003
+          },
+          "forest": {
+            "auc": 0.539597485,
+            "balanced_accuracy": 0.52045,
+            "eer": 0.47955000000000003
+          },
+          "mlp": {
+            "auc": 0.5373540450000001,
+            "balanced_accuracy": 0.51965,
+            "eer": 0.48035
+          }
+        }
+      },
+      {
+        "dataset": "tgbl-wiki",
+        "point": "balanced",
+        "bits_per_transition": 0.0924,
+        "embed_rate": 0.0924,
+        "max_public_auc": 0.566940075,
+        "capacity_at_auc_060": 0.0924,
+        "detectors": {
+          "linear": {
+            "auc": 0.53289432,
+            "balanced_accuracy": 0.5164500000000001,
+            "eer": 0.48285
+          },
+          "forest": {
+            "auc": 0.566940075,
+            "balanced_accuracy": 0.53505,
+            "eer": 0.46499999999999997
+          },
+          "mlp": {
+            "auc": 0.5604379349999999,
+            "balanced_accuracy": 0.5318499999999999,
+            "eer": 0.4681
+          }
+        }
+      },
+      {
+        "dataset": "tgbl-wiki",
+        "point": "open_rank",
+        "bits_per_transition": 0.1338,
+        "embed_rate": 0.1338,
+        "max_public_auc": 0.59295472,
+        "capacity_at_auc_060": 0.1338,
+        "detectors": {
+          "linear": {
+            "auc": 0.5526784100000001,
+            "balanced_accuracy": 0.5298,
+            "eer": 0.47215
+          },
+          "forest": {
+            "auc": 0.59295472,
+            "balanced_accuracy": 0.54945,
+            "eer": 0.4506
+          },
+          "mlp": {
+            "auc": 0.592079395,
+            "balanced_accuracy": 0.54965,
+            "eer": 0.45035000000000003
+          }
+        }
+      },
+      {
+        "dataset": "tgbl-wiki",
+        "point": "two_bit_probe",
+        "bits_per_transition": 0.2129,
+        "embed_rate": 0.1505,
+        "max_public_auc": 0.60736831,
+        "capacity_at_auc_060": 0.0,
+        "detectors": {
+          "linear": {
+            "auc": 0.562785165,
+            "balanced_accuracy": 0.5367999999999999,
+            "eer": 0.46699999999999997
+          },
+          "forest": {
+            "auc": 0.60736831,
+            "balanced_accuracy": 0.5578,
+            "eer": 0.44205
+          },
+          "mlp": {
+            "auc": 0.6060032049999999,
+            "balanced_accuracy": 0.55775,
+            "eer": 0.44245
+          }
+        }
+      }
+    ],
+    "mooc": [
+      {
+        "dataset": "mooc",
+        "point": "ultra_stealth",
+        "bits_per_transition": 0.0,
+        "embed_rate": 0.0,
+        "max_public_auc": 0.5,
+        "capacity_at_auc_060": 0.0,
+        "detectors": {
+          "linear": {
+            "auc": 0.5,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          },
+          "forest": {
+            "auc": 0.5,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          },
+          "mlp": {
+            "auc": 0.499999965,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          }
+        }
+      },
+      {
+        "dataset": "mooc",
+        "point": "conservative",
+        "bits_per_transition": 0.0011,
+        "embed_rate": 0.0011,
+        "max_public_auc": 0.5009990750000001,
+        "capacity_at_auc_060": 0.0011,
+        "detectors": {
+          "linear": {
+            "auc": 0.500907125,
+            "balanced_accuracy": 0.50045,
+            "eer": 0.49955
+          },
+          "forest": {
+            "auc": 0.5009990750000001,
+            "balanced_accuracy": 0.5005000000000001,
+            "eer": 0.49950000000000006
+          },
+          "mlp": {
+            "auc": 0.500994445,
+            "balanced_accuracy": 0.5005,
+            "eer": 0.4995
+          }
+        }
+      },
+      {
+        "dataset": "mooc",
+        "point": "balanced",
+        "bits_per_transition": 0.0047,
+        "embed_rate": 0.0047,
+        "max_public_auc": 0.504288185,
+        "capacity_at_auc_060": 0.0047,
+        "detectors": {
+          "linear": {
+            "auc": 0.5042837600000001,
+            "balanced_accuracy": 0.50215,
+            "eer": 0.49785
+          },
+          "forest": {
+            "auc": 0.504288185,
+            "balanced_accuracy": 0.50215,
+            "eer": 0.49785
+          },
+          "mlp": {
+            "auc": 0.502999275,
+            "balanced_accuracy": 0.5015000000000001,
+            "eer": 0.49849999999999994
+          }
+        }
+      },
+      {
+        "dataset": "mooc",
+        "point": "open_rank",
+        "bits_per_transition": 0.0254,
+        "embed_rate": 0.0254,
+        "max_public_auc": 0.523801315,
+        "capacity_at_auc_060": 0.0254,
+        "detectors": {
+          "linear": {
+            "auc": 0.5234125199999999,
+            "balanced_accuracy": 0.512,
+            "eer": 0.488
+          },
+          "forest": {
+            "auc": 0.523066405,
+            "balanced_accuracy": 0.5118,
+            "eer": 0.4882
+          },
+          "mlp": {
+            "auc": 0.523801315,
+            "balanced_accuracy": 0.5121,
+            "eer": 0.48785
+          }
+        }
+      },
+      {
+        "dataset": "mooc",
+        "point": "two_bit_probe",
+        "bits_per_transition": 1.9941,
+        "embed_rate": 0.9992,
+        "max_public_auc": 0.9900239299999999,
+        "capacity_at_auc_060": 0.0,
+        "detectors": {
+          "linear": {
+            "auc": 0.9829406100000001,
+            "balanced_accuracy": 0.9722500000000001,
+            "eer": 0.03394999999999998
+          },
+          "forest": {
+            "auc": 0.9900239299999999,
+            "balanced_accuracy": 0.97865,
+            "eer": 0.034900000000000014
+          },
+          "mlp": {
+            "auc": 0.9882513799999999,
+            "balanced_accuracy": 0.97865,
+            "eer": 0.03394999999999997
+          }
+        }
+      }
+    ],
+    "lastfm": [
+      {
+        "dataset": "lastfm",
+        "point": "ultra_stealth",
+        "bits_per_transition": 0.0,
+        "embed_rate": 0.0,
+        "max_public_auc": 0.5,
+        "capacity_at_auc_060": 0.0,
+        "detectors": {
+          "linear": {
+            "auc": 0.5,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          },
+          "forest": {
+            "auc": 0.5,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          },
+          "mlp": {
+            "auc": 0.49999999,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          }
+        }
+      },
+      {
+        "dataset": "lastfm",
+        "point": "conservative",
+        "bits_per_transition": 0.0,
+        "embed_rate": 0.0,
+        "max_public_auc": 0.5000000099999999,
+        "capacity_at_auc_060": 0.0,
+        "detectors": {
+          "linear": {
+            "auc": 0.5,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          },
+          "forest": {
+            "auc": 0.5,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          },
+          "mlp": {
+            "auc": 0.5000000099999999,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          }
+        }
+      },
+      {
+        "dataset": "lastfm",
+        "point": "balanced",
+        "bits_per_transition": 0.0002,
+        "embed_rate": 0.0002,
+        "max_public_auc": 0.5001994900000001,
+        "capacity_at_auc_060": 0.0002,
+        "detectors": {
+          "linear": {
+            "auc": 0.5000076,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          },
+          "forest": {
+            "auc": 0.50010886,
+            "balanced_accuracy": 0.50005,
+            "eer": 0.49995
+          },
+          "mlp": {
+            "auc": 0.5001994900000001,
+            "balanced_accuracy": 0.5001,
+            "eer": 0.4999
+          }
+        }
+      },
+      {
+        "dataset": "lastfm",
+        "point": "open_rank",
+        "bits_per_transition": 0.0038,
+        "embed_rate": 0.0038,
+        "max_public_auc": 0.5034890599999999,
+        "capacity_at_auc_060": 0.0038,
+        "detectors": {
+          "linear": {
+            "auc": 0.5033729,
+            "balanced_accuracy": 0.5017,
+            "eer": 0.49829999999999997
+          },
+          "forest": {
+            "auc": 0.5034890599999999,
+            "balanced_accuracy": 0.50175,
+            "eer": 0.49824999999999997
+          },
+          "mlp": {
+            "auc": 0.5034859549999999,
+            "balanced_accuracy": 0.50175,
+            "eer": 0.49824999999999997
+          }
+        }
+      },
+      {
+        "dataset": "lastfm",
+        "point": "two_bit_probe",
+        "bits_per_transition": 0.0536,
+        "embed_rate": 0.0277,
+        "max_public_auc": 0.5247583549999999,
+        "capacity_at_auc_060": 0.0536,
+        "detectors": {
+          "linear": {
+            "auc": 0.522888115,
+            "balanced_accuracy": 0.5117,
+            "eer": 0.4883
+          },
+          "forest": {
+            "auc": 0.5247583549999999,
+            "balanced_accuracy": 0.51255,
+            "eer": 0.48745
+          },
+          "mlp": {
+            "auc": 0.5243187,
+            "balanced_accuracy": 0.5123500000000001,
+            "eer": 0.48765000000000003
+          }
+        }
+      }
+    ],
+    "geolife_cells": [
+      {
+        "dataset": "geolife_cells",
+        "point": "ultra_stealth",
+        "bits_per_transition": 0.0,
+        "embed_rate": 0.0,
+        "max_public_auc": 0.500000005,
+        "capacity_at_auc_060": 0.0,
+        "detectors": {
+          "linear": {
+            "auc": 0.5,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          },
+          "forest": {
+            "auc": 0.5,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          },
+          "mlp": {
+            "auc": 0.500000005,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          }
+        }
+      },
+      {
+        "dataset": "geolife_cells",
+        "point": "conservative",
+        "bits_per_transition": 0.0005,
+        "embed_rate": 0.0005,
+        "max_public_auc": 0.500015175,
+        "capacity_at_auc_060": 0.0005,
+        "detectors": {
+          "linear": {
+            "auc": 0.5,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          },
+          "forest": {
+            "auc": 0.5,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          },
+          "mlp": {
+            "auc": 0.500015175,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          }
+        }
+      },
+      {
+        "dataset": "geolife_cells",
+        "point": "balanced",
+        "bits_per_transition": 0.0007,
+        "embed_rate": 0.0007,
+        "max_public_auc": 0.50006862,
+        "capacity_at_auc_060": 0.0007,
+        "detectors": {
+          "linear": {
+            "auc": 0.50006862,
+            "balanced_accuracy": 0.50005,
+            "eer": 0.49995
+          },
+          "forest": {
+            "auc": 0.4999999299999999,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          },
+          "mlp": {
+            "auc": 0.50004675,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          }
+        }
+      },
+      {
+        "dataset": "geolife_cells",
+        "point": "open_rank",
+        "bits_per_transition": 0.3086,
+        "embed_rate": 0.3086,
+        "max_public_auc": 0.760220545,
+        "capacity_at_auc_060": 0.0,
+        "detectors": {
+          "linear": {
+            "auc": 0.760220545,
+            "balanced_accuracy": 0.65375,
+            "eer": 0.34625000000000006
+          },
+          "forest": {
+            "auc": 0.759811315,
+            "balanced_accuracy": 0.6535,
+            "eer": 0.34655
+          },
+          "mlp": {
+            "auc": 0.7600857,
+            "balanced_accuracy": 0.6538999999999999,
+            "eer": 0.34645000000000004
+          }
+        }
+      },
+      {
+        "dataset": "geolife_cells",
+        "point": "two_bit_probe",
+        "bits_per_transition": 0.6169,
+        "embed_rate": 0.309,
+        "max_public_auc": 0.7602211449999999,
+        "capacity_at_auc_060": 0.0,
+        "detectors": {
+          "linear": {
+            "auc": 0.7602211449999999,
+            "balanced_accuracy": 0.65375,
+            "eer": 0.34624999999999995
+          },
+          "forest": {
+            "auc": 0.75946384,
+            "balanced_accuracy": 0.6532,
+            "eer": 0.3468
+          },
+          "mlp": {
+            "auc": 0.760152865,
+            "balanced_accuracy": 0.65385,
+            "eer": 0.34615
+          }
+        }
+      }
+    ],
+    "t_drive_cells": [
+      {
+        "dataset": "t_drive_cells",
+        "point": "ultra_stealth",
+        "bits_per_transition": 0.0,
+        "embed_rate": 0.0,
+        "max_public_auc": 0.5,
+        "capacity_at_auc_060": 0.0,
+        "detectors": {
+          "linear": {
+            "auc": 0.5,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          },
+          "forest": {
+            "auc": 0.5,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          },
+          "mlp": {
+            "auc": 0.49998438,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          }
+        }
+      },
+      {
+        "dataset": "t_drive_cells",
+        "point": "conservative",
+        "bits_per_transition": 0.0316,
+        "embed_rate": 0.0316,
+        "max_public_auc": 0.522012975,
+        "capacity_at_auc_060": 0.0316,
+        "detectors": {
+          "linear": {
+            "auc": 0.5194580050000001,
+            "balanced_accuracy": 0.5108,
+            "eer": 0.48945
+          },
+          "forest": {
+            "auc": 0.522012975,
+            "balanced_accuracy": 0.5113,
+            "eer": 0.4887
+          },
+          "mlp": {
+            "auc": 0.521287305,
+            "balanced_accuracy": 0.51115,
+            "eer": 0.48884999999999995
+          }
+        }
+      },
+      {
+        "dataset": "t_drive_cells",
+        "point": "balanced",
+        "bits_per_transition": 0.1106,
+        "embed_rate": 0.1106,
+        "max_public_auc": 0.56560611,
+        "capacity_at_auc_060": 0.1106,
+        "detectors": {
+          "linear": {
+            "auc": 0.54934718,
+            "balanced_accuracy": 0.52815,
+            "eer": 0.47235
+          },
+          "forest": {
+            "auc": 0.56560611,
+            "balanced_accuracy": 0.53495,
+            "eer": 0.46505
+          },
+          "mlp": {
+            "auc": 0.558023915,
+            "balanced_accuracy": 0.5307999999999999,
+            "eer": 0.46925
+          }
+        }
+      },
+      {
+        "dataset": "t_drive_cells",
+        "point": "open_rank",
+        "bits_per_transition": 0.268,
+        "embed_rate": 0.268,
+        "max_public_auc": 0.64493639,
+        "capacity_at_auc_060": 0.0,
+        "detectors": {
+          "linear": {
+            "auc": 0.612820235,
+            "balanced_accuracy": 0.56835,
+            "eer": 0.43465
+          },
+          "forest": {
+            "auc": 0.64493639,
+            "balanced_accuracy": 0.58065,
+            "eer": 0.41935
+          },
+          "mlp": {
+            "auc": 0.643227665,
+            "balanced_accuracy": 0.5801499999999999,
+            "eer": 0.4194
+          }
+        }
+      },
+      {
+        "dataset": "t_drive_cells",
+        "point": "two_bit_probe",
+        "bits_per_transition": 0.5751,
+        "embed_rate": 0.3388,
+        "max_public_auc": 0.6792188349999999,
+        "capacity_at_auc_060": 0.0,
+        "detectors": {
+          "linear": {
+            "auc": 0.64299983,
+            "balanced_accuracy": 0.5877,
+            "eer": 0.41455000000000003
+          },
+          "forest": {
+            "auc": 0.6792188349999999,
+            "balanced_accuracy": 0.60295,
+            "eer": 0.39705
+          },
+          "mlp": {
+            "auc": 0.677932015,
+            "balanced_accuracy": 0.60295,
+            "eer": 0.3966
+          }
+        }
+      }
+    ]
+  }
+}

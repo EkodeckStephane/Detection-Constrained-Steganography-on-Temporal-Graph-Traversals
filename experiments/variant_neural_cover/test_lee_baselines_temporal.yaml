@@ -1,0 +1,12 @@
+campaign: lee_baselines_temporal_test
+date: 2026-06-26
+datasets:
+  - mooc
+max_rows_per_split: 1000
+seed: 20260626
+message_bytes:
+  - 8
+adabind:
+  max_iterations: 1000
+  sampled_edges: 20
+  extra_target_edges: 2

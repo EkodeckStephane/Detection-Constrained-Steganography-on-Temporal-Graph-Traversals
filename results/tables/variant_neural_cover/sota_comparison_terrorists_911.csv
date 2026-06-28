@@ -1,0 +1,8 @@
+method,payload_bpe,added_edges,topology_modified,max_auc
+BIND (8 B),0.4211,0,False,
+BIND (16 B),0.8421,0,False,
+BIND (24 B),1.2632,0,False,
+AdaBIND,0.4025,7,True,
+BYNIS (0 extra),7.2,0,False,
+BYNIS (50 extra),2.0571,50,True,
+Proposition (backoff),0.1846,0,False,0.5563

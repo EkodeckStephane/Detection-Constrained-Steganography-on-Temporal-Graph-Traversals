@@ -1,0 +1,154 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage[a4paper,margin=1.8cm]{geometry}
+\usepackage{amsmath,booktabs,tabularx,array,float,hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\title{Rapport de reproduction des baselines\\Phase 2/10}
+\author{Stéganographie adaptative par parcours de graphe}
+\date{13 juin 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Cette phase établit les baselines nécessaires à l'évaluation future :
+BIND, AdaBIND, BYNIS, marche uniforme, DeepWalk et node2vec. Le code officiel
+de Lee et al. a été figé au commit
+\texttt{b7499454\ldots539b02fa}. La reproduction de BIND
+produit exactement le même ordre d'arêtes que l'oracle HMG. Dix tests
+automatisés contrôlent le décodage, la capacité, le déterminisme et la
+préservation ou la modification de la topologie. Les résultats obtenus sur
+le réseau réel \emph{terrorists-911} confirment la capacité de BIND, mais
+mettent également en évidence sa fragilité à de faibles réordonnancements.
+\end{abstract}
+
+\section{Périmètre et protocole}
+
+Le jeu de contrôle contient 62 sommets et 152 arêtes dirigées. Son empreinte
+SHA-256 commence par \texttt{0897b4df}\allowbreak\texttt{9fcddbb3} et se
+termine par \texttt{54d55315}\allowbreak\texttt{bfeb03a4}; sa valeur complète
+est archivée dans la sortie JSON.
+Il s'agit d'un réseau réel distribué avec HMG. Il sert exclusivement à la
+reproduction des baselines : il ne remplace pas les trajectoires et sessions
+observées exigées pour la validation de notre méthode.
+
+La graine globale est 1234. BIND conserve le multiensemble des arêtes et
+encode les couples de bits par les parités des degrés de leurs extrémités.
+AdaBIND ajoute des arêtes lorsque certaines classes sont insuffisantes.
+BYNIS construit un graphe synthétique dont la somme des identifiants modulo
+256 code un octet. Les sorties sont produites automatiquement aux formats
+JSON et CSV par \texttt{code/scripts/run\_phase2\_reproduction.py}.
+
+\section{Conformité à l'implémentation officielle}
+
+Le format de longueur, les quatre classes \(00,01,10,11\), la sélection des
+arêtes et la permutation MT19937 sont reproduits. Un test oracle exécute HMG
+et notre implémentation sur les mêmes 152 arêtes, le même message de 16 octets
+et la même clé. Les deux listes ordonnées sont strictement égales.
+
+Les effectifs observés sont \(51,39,37,25\). La borne équilibrée de Lee vaut
+donc
+\[
+  C_{\mathrm{BIND}}=8\min(51,39,37,25)=200\ \text{bits}.
+\]
+Cette borne est conservatrice : l'encodabilité réelle dépend de la fréquence
+des quatre couples de bits dans le message, en incluant l'en-tête.
+
+\section{Résultats passifs}
+
+\begin{table}[H]
+\centering
+\caption{Résultats de reproduction sur \emph{terrorists-911}.}
+\begin{tabular}{lrrrrl}
+\toprule
+Méthode & Message & Arêtes finales & Arêtes ajoutées & BPE & Décodage\\
+\midrule
+BIND & 8 o  & 152 & 0  & 0,421 & exact\\
+BIND & 16 o & 152 & 0  & 0,842 & exact\\
+BIND & 24 o & 152 & 0  & 1,263 & exact\\
+AdaBIND & 8 o & 159 & 7 & 0,403 & exact\\
+BYNIS & 18 o & 20 & -- & 7,200 & exact\\
+BYNIS + 50 leurres & 18 o & 70 & 50 & 2,057 & exact\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Le cas AdaBIND utilise huit octets \texttt{ff}, volontairement défavorables à
+BIND. Sept arêtes sont ajoutées en sept itérations. Ce succès a un coût
+conceptuel majeur : la topologie n'est plus préservée. BYNIS obtient un débit
+élevé parce qu'il synthétise le support; il doit rester dans une catégorie
+séparée des méthodes utilisant un graphe réel inchangé.
+
+\section{Robustesse au réordonnancement}
+
+Chaque intensité comporte 100 attaques indépendantes sur le message BIND de
+16 octets. Une attaque échange des positions adjacentes après émission.
+
+\begin{table}[H]
+\centering
+\caption{Effet des échanges adjacents sur BIND.}
+\begin{tabular}{rrrrr}
+\toprule
+Échanges & Positions touchées & BER moyenne & Récupération exacte & Échec décodage\\
+\midrule
+1  & 1,32\%  & 0,116 & 42\% & 5\%\\
+2  & 2,63\%  & 0,161 & 24\% & 9\%\\
+4  & 5,26\%  & 0,320 & 3\%  & 20\%\\
+8  & 10,53\% & 0,506 & 0\%  & 30\%\\
+16 & 21,05\% & 0,846 & 0\%  & 57\%\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+L'avis est tranché : BIND est une baseline de capacité utile, mais ce n'est
+pas une base suffisamment robuste pour notre proposition. Même une
+perturbation minime peut altérer l'en-tête et provoquer une désynchronisation
+globale. Notre architecture devra séparer synchronisation, détection d'erreur
+et correction, puis les évaluer sous un modèle de canal explicite.
+
+\section{Parcours de référence}
+
+Sur le graphe non dirigé associé, des marches de longueur 64 ont été générées.
+La marche uniforme visite 31 sommets distincts et présente un taux de retour
+immédiat de 0,210. Avec \(p=0,5\) et \(q=2\), node2vec visite 21 sommets et son
+taux de retour atteint 0,306. Le corpus DeepWalk contient 248 marches, toutes
+de longueur 64, avec un ratio moyen de sommets distincts de 0,423.
+
+Ces chiffres ne mesurent pas encore la furtivité. Ils vérifient les mécanismes
+et montrent que les paramètres de node2vec modifient effectivement la
+dynamique locale. La phase de données réelles devra comparer ces parcours à
+des trajectoires observées, et non les déclarer naturels par construction.
+
+\section{Corrections et limites}
+
+AdaBIND recalcule les classes après chaque ajout, puisque la parité des deux
+extrémités reclassifie aussi leurs arêtes incidentes. Le meilleur candidat est
+réinitialisé à chaque itération pour éviter un blocage possible du code
+officiel sur une ancienne arête. Ces écarts sont documentés et testés.
+
+La phase ne reproduit pas les campagnes OGB à grande échelle ni les coûts
+mémoire publiés. Elle valide les contrats algorithmiques et la petite
+expérience réelle distribuée par les auteurs. Les résultats synthétiques de
+BYNIS restent des résultats de baseline et ne seront pas utilisés comme preuve
+principale dans l'article ou le mémoire.
+
+\section{Décision de passage}
+
+La phase 2 est terminée pour son périmètre :
+\begin{itemize}
+  \item dix tests automatisés réussissent;
+  \item BIND est identique à l'oracle officiel sur le cas contrôlé;
+  \item BIND, AdaBIND et BYNIS récupèrent exactement leurs messages;
+  \item les effets topologiques sont explicitement séparés;
+  \item les trois parcours de référence sont déterministes et testés;
+  \item la campagne, la configuration et les résultats sont figés.
+\end{itemize}
+
+La phase suivante doit construire le pipeline causal des datasets réels,
+leurs fiches de provenance et leurs statistiques temporelles.
+
+\end{document}

@@ -1,0 +1,200 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage[a4paper,margin=2.2cm]{geometry}
+\usepackage{amsmath,amssymb,booktabs,tabularx,array,hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\title{Rapport de verrouillage scientifique\\Phase 1/10}
+\author{Projet de stéganographie adaptative par parcours de graphe}
+\date{12 juin 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Cette phase fixe l'objet transmis, le modèle de menace, les questions de
+recherche, les revendications d'originalité admissibles et les critères
+d'abandon. Le résultat principal est un recentrage : le stego est une trace
+de parcours temporel valide, et non un graphe modifié. L'originalité ne peut
+pas reposer sur l'usage isolé d'un chemin, d'un RNN ou de la logique floue,
+car ces composants possèdent des antériorités. La contribution visée est leur
+intégration vérifiable dans un canal temporel appris et évalué contre des
+stéganalystes externes sur des trajectoires ou sessions réelles.
+\end{abstract}
+
+\section{Décision scientifique}
+
+Soit un graphe temporel observé jusqu'à l'instant \(T\). Une trace admissible
+est définie par
+\[
+\tau=(v_0,e_1,t_1,v_1,\ldots,e_L,t_L,v_L),\qquad
+t_1<\cdots<t_L\leq T.
+\]
+La méthode n'ajoute ni sommet ni arête et ne modifie pas les timestamps. Le
+message chiffré détermine les choix successifs parmi les continuations
+admissibles. Le canal est donc une stéganographie générative ou sélective de
+parcours.
+
+Un modèle causal estime
+\[
+q_\theta(a_i\mid\tau_{<i},G_{\leq t_i}).
+\]
+Un codeur entropique associe les bits aux continuations. Un contrôleur flou
+réduit le débit ou impose l'abstention selon l'entropie, la calibration, le
+risque de détection, la charge restante et la fragilité du canal.
+
+\section{Extension formelle de la méthode}
+
+Quatre distributions sont séparées : \(P^\star\), distribution réelle
+inconnue; \(Q_\theta\), modèle causal appris; \(C_\psi\), distribution après
+contrôle; et \(S\), distribution induite par le codeur. La politique
+\(\pi=(\theta,\psi,\phi)\) optimise
+\[
+\mathcal J(\pi)=R(\pi)
+-\lambda_dD(S_\pi,P^\star)
+-\lambda_r\operatorname{Risk}_{Eve}(\pi)
+-\lambda_e\operatorname{BER}(\pi)
+-\lambda_c\operatorname{Cost}(\pi).
+\]
+Le point publié est toutefois choisi sur validation par maximisation du débit
+sous contraintes d'AUC, de BER et d'utilité.
+
+Le coût local d'une continuation est
+\[
+c_i(a)=
+\alpha[-\log Q_\theta(a\mid h_i)]
++\beta r_{\rm steg}(a,h_i)
++\gamma r_{\rm canal}(a,h_i)
++\xi r_{\rm cal}(a,h_i).
+\]
+Le signal du stéganalyste modifie donc les probabilités disponibles avant
+l'encodage. Le contrôleur Takagi--Sugeno choisit un budget de bits et l'un des
+quatre modes \(\mathtt{EMBED}\), \(\mathtt{COVER}\), \(\mathtt{PAUSE}\) ou
+\(\mathtt{STOP}\).
+
+La divergence KL n'étant pas triangulaire, la décomposition théorique utilise
+des hypothèses de rapport de vraisemblance. Si
+\[
+\log\frac{Q_\theta}{P^\star}\leq\varepsilon_{\rm mod},\qquad
+\log\frac{C_\psi}{Q_\theta}\leq\varepsilon_{\rm ctrl},\qquad
+D_{\rm KL}(S\Vert C_\psi)\leq\varepsilon_{\rm code},
+\]
+sur le support stego, alors
+\[
+D_{\rm KL}(S\Vert P^\star)
+\leq\varepsilon_{\rm mod}
++\varepsilon_{\rm ctrl}
++\varepsilon_{\rm code}.
+\]
+Cette proposition structure l'analyse sans prétendre fournir une sécurité
+parfaite contre une distribution réelle inconnue.
+
+\section{Modèle de menace}
+
+Alice et Bob partagent une clé, une version du modèle, un graphe de référence
+et une règle déterministe de construction des candidats. Eve connaît
+l'algorithme, l'architecture et les données publiques, mais pas la clé. Elle
+peut entraîner des détecteurs différents de celui utilisé pendant
+l'apprentissage.
+
+Le scénario principal est passif. Le scénario secondaire autorise suppression,
+insertion, réordonnancement, troncature et bruit temporel. La correction
+requise dans le canal passif est
+\[
+\Pr[\operatorname{Dec}_k(\operatorname{Enc}_k(m,G),G)=m]=1.
+\]
+
+La sécurité parfaite vis-à-vis de la distribution réelle n'est pas
+revendiquée. Il faut distinguer la fidélité à \(q_\theta\), mesurable
+conditionnellement au modèle, de la détectabilité face à la distribution
+réelle inconnue \(P^\star\).
+
+\section{Contrôle d'antériorité}
+
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabularx}{0.96\textwidth}{@{}YYYYY@{}}
+\toprule
+Travail & Chemin & Distribution & Adaptation & Limite pour notre projet \\
+\midrule
+BIND/AdaBIND & Non & Statique & Ajout d'arêtes & Pas de dynamique ni
+stéganalyse apprise \\
+Graph-Stega & Oui & Graphe de connaissances & Non & Invalide la primauté
+générale sur les chemins \\
+ADG/iMEC & Non & Autorégressive & Variable & Références fortes pour
+l'encodage distributionnel \\
+ADLM/FreStega & Non & Modèle de langue & Entropie/domaine & Invalident la
+primauté sur l'adaptation entropique \\
+Joshi--Bhand & Non & Image statique & Flou Mamdani & Invalide la primauté
+générale sur la logique floue \\
+Mesh FPD & Non & Coût stéganalytique & Distorsion/STC & Baseline
+méthodologique d'adaptation au détecteur \\
+\bottomrule
+\end{tabularx}
+\endgroup
+
+Les formulations ``première stéganographie par chemin'', ``première
+stéganographie floue'' et ``sécurité parfaite'' sont interdites. La
+revendication provisoire porte sur la combinaison spécifique d'un parcours
+temporel causal, d'un encodage distributionnel, d'un contrôle flou avec
+abstention et d'une stéganalyse externe.
+
+\section{Questions et hypothèses}
+
+\begin{enumerate}
+\item Le modèle temporel est-il mieux calibré que les parcours uniforme,
+DeepWalk et node2vec?
+\item Le codeur conserve-t-il la distribution du modèle sans erreur de
+décodage dans le canal passif?
+\item Le contrôleur flou améliore-t-il le front
+capacité--détectabilité--fiabilité face à un seuil fixe et une MLP?
+\item Le gain subsiste-t-il contre des détecteurs non vus et en transfert?
+\item Quel niveau de redondance protège le message sous altération du canal?
+\end{enumerate}
+
+Le contrôleur flou doit améliorer l'hypervolume d'au moins 5\,\% avec un
+intervalle bootstrap excluant zéro. Au point d'exploitation, l'AUC externe
+doit être au plus de 0,60 sur trois domaines, le BER passif doit être nul et
+le BER corrigé doit être inférieur ou égal à \(10^{-3}\) au niveau d'attaque
+retenu.
+
+\section{Politique des données}
+
+Les données sont séparées en deux niveaux. Le niveau A contient des
+trajectoires ou sessions réellement observées et fonde les conclusions de
+furtivité. Le niveau B contient des flux d'interactions temporelles, notamment
+TGB, utiles pour l'apprentissage et le passage à l'échelle mais insuffisants
+pour qualifier seuls un parcours de comportement naturel.
+
+Porto Taxi, T-Drive, GeoLife et des sessions réelles de recommandation sont
+des candidats de niveau A. Leur admission exige une licence vérifiée, une
+provenance, un checksum et une segmentation reproductible. Aucune donnée
+synthétique ne figurera dans les résultats scientifiques.
+
+\section{Critères de pivot}
+
+\begin{itemize}
+\item Retirer la logique floue si elle ne bat pas le seuil fixe.
+\item Retirer GRU ou TGN si une architecture plus simple est aussi bien
+calibrée et aussi furtive.
+\item Optimiser l'alignement au domaine si l'erreur du modèle domine l'erreur
+d'encodage.
+\item Réserver TGB au préentraînement si la sémantique des parcours n'est pas
+observable.
+\item Abandonner le canal si l'AUC reste supérieure à 0,65 à toute charge
+utile exploitable sur trois datasets.
+\end{itemize}
+
+\section{Verdict}
+
+Le sujet est scientifiquement prometteur, mais sa valeur Q1 dépendra d'une
+démonstration causale de l'apport de chaque composant. Une simple combinaison
+GNN--GRU--flou ne constitue pas une contribution suffisante. La phase est
+gelée provisoirement; les revendications de primauté restent suspendues
+jusqu'à la clôture des recherches dans les bases institutionnelles.
+
+\end{document}

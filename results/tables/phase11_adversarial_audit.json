@@ -1,0 +1,61 @@
+{
+  "campaign": "phase11_adversarial_audit",
+  "sources": [
+    "results/tables/phase7_steganalysis.json",
+    "results/tables/phase9_independent_neural_steganalysis.json",
+    "results/tables/phase9_adaptive_steganalysis.json"
+  ],
+  "datasets": {
+    "tgbl-wiki": {
+      "max_external_auc": 0.540424565,
+      "max_independent_neural_auc": 0.5135636484375,
+      "bounded_white_box_auc": 0.5296305,
+      "bounded_white_box_auc_ci_high": 0.5368318674074298,
+      "oracle_auc": 0.5371577421875,
+      "oracle_auc_ci_high": 0.5398666898074296,
+      "max_bounded_public_auc": 0.540424565
+    },
+    "mooc": {
+      "max_external_auc": 0.5006993,
+      "max_independent_neural_auc": 0.5001866484374999,
+      "bounded_white_box_auc": 0.5008746171874998,
+      "bounded_white_box_auc_ci_high": 0.5014405182851389,
+      "oracle_auc": 0.5008746171875,
+      "oracle_auc_ci_high": 0.5014975782532284,
+      "max_bounded_public_auc": 0.5008746171874998
+    },
+    "lastfm": {
+      "max_external_auc": 0.500099965,
+      "max_independent_neural_auc": 0.49999999999999994,
+      "bounded_white_box_auc": 0.5,
+      "bounded_white_box_auc_ci_high": 0.5,
+      "oracle_auc": 0.5,
+      "oracle_auc_ci_high": 0.5,
+      "max_bounded_public_auc": 0.500099965
+    },
+    "geolife_cells": {
+      "max_external_auc": 0.5000273,
+      "max_independent_neural_auc": 0.5,
+      "bounded_white_box_auc": 0.5,
+      "bounded_white_box_auc_ci_high": 0.5,
+      "oracle_auc": 0.5,
+      "oracle_auc_ci_high": 0.5,
+      "max_bounded_public_auc": 0.5000273
+    },
+    "t_drive_cells": {
+      "max_external_auc": 0.522823765,
+      "max_independent_neural_auc": 0.5003308359374999,
+      "bounded_white_box_auc": 0.520656234375,
+      "bounded_white_box_auc_ci_high": 0.5288222812792426,
+      "oracle_auc": 0.532938875,
+      "oracle_auc_ci_high": 0.5352618810192843,
+      "max_bounded_public_auc": 0.522823765
+    }
+  },
+  "remaining_scope": [
+    "third_party_red_team",
+    "larger_temporal_gnn_steganalysts",
+    "cross_domain_detector_transfer",
+    "unbounded_active_adversary"
+  ]
+}

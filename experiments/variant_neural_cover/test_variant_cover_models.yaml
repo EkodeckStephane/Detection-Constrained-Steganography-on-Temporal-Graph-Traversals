@@ -1,0 +1,35 @@
+campaign: variant_neural_cover_models_test
+date: 2026-06-26
+datasets:
+  - mooc
+max_rows_per_split: 500
+cover_models:
+  - name: backoff
+    kind: backoff
+    params:
+      prior_strength: 8.0
+      top_k: 32
+  - name: temporal_graph_encoder
+    kind: temporal_gnn
+    params:
+      embedding_dim: 32
+      hidden_dim: 64
+      epochs: 2
+      batch_size: 128
+      learning_rate: 0.003
+      patience: 2
+      dropout: 0.2
+      top_k: 32
+codec:
+  max_bits_per_transition: 1
+  codec_backend: range
+  max_local_total_variation: 0.35
+  max_local_kl_bits: 0.60
+  min_entropy_bits: 0.5
+  cover_when_unsafe: true
+  max_encoded_rank_fraction: 0.5
+detectors:
+  - linear
+seed: 20260626
+seeds:
+  - 11

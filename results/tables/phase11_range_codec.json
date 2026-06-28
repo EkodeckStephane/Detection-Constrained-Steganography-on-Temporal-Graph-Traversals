@@ -1,0 +1,63 @@
+{
+  "campaign": "phase11_range_codec",
+  "source_campaign": "phase7_external_steganalysis",
+  "precision_bits": 48,
+  "block_steps": 64,
+  "datasets": {
+    "tgbl-wiki": {
+      "dataset": "tgbl-wiki",
+      "test_transitions": 10000,
+      "safe_steps": 772,
+      "safe_step_rate": 0.0772,
+      "safe_entropy_bits_per_transition": 0.10972830256970581,
+      "local_bits_per_transition": 0.0515,
+      "arithmetic_bits_per_transition": 0.0576,
+      "arithmetic_bits_per_safe_step": 0.7461139896373057,
+      "arithmetic_gain_over_local": 0.0061
+    },
+    "mooc": {
+      "dataset": "mooc",
+      "test_transitions": 10000,
+      "safe_steps": 3,
+      "safe_step_rate": 0.0003,
+      "safe_entropy_bits_per_transition": 0.0002906294054580099,
+      "local_bits_per_transition": 0.0012,
+      "arithmetic_bits_per_transition": 0.0,
+      "arithmetic_bits_per_safe_step": 0.0,
+      "arithmetic_gain_over_local": -0.0012
+    },
+    "lastfm": {
+      "dataset": "lastfm",
+      "test_transitions": 10000,
+      "safe_steps": 9,
+      "safe_step_rate": 0.0009,
+      "safe_entropy_bits_per_transition": 0.0014832861679723018,
+      "local_bits_per_transition": 0.0,
+      "arithmetic_bits_per_transition": 0.001,
+      "arithmetic_bits_per_safe_step": 1.1111111111111112,
+      "arithmetic_gain_over_local": 0.001
+    },
+    "geolife_cells": {
+      "dataset": "geolife_cells",
+      "test_transitions": 10000,
+      "safe_steps": 22,
+      "safe_step_rate": 0.0022,
+      "safe_entropy_bits_per_transition": 0.0033222403586781178,
+      "local_bits_per_transition": 0.0004,
+      "arithmetic_bits_per_transition": 0.0035,
+      "arithmetic_bits_per_safe_step": 1.5909090909090908,
+      "arithmetic_gain_over_local": 0.0031
+    },
+    "t_drive_cells": {
+      "dataset": "t_drive_cells",
+      "test_transitions": 10000,
+      "safe_steps": 879,
+      "safe_step_rate": 0.0879,
+      "safe_entropy_bits_per_transition": 0.08713167055929628,
+      "local_bits_per_transition": 0.0299,
+      "arithmetic_bits_per_transition": 0.0648,
+      "arithmetic_bits_per_safe_step": 0.7372013651877133,
+      "arithmetic_gain_over_local": 0.0349
+    }
+  }
+}

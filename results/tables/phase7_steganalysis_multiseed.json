@@ -1,0 +1,1054 @@
+{
+  "campaign": "phase7_external_steganalysis",
+  "date": "2026-06-26",
+  "model": {
+    "name": "temporal_source_previous_destination_backoff",
+    "prior_strength": 8.0,
+    "top_k": 32
+  },
+  "codec": {
+    "max_bits_per_transition": 1,
+    "codec_backend": "range",
+    "max_local_total_variation": 0.35,
+    "max_local_kl_bits": 0.6,
+    "min_entropy_bits": 0.5,
+    "cover_when_unsafe": true,
+    "max_encoded_rank_fraction": 0.5
+  },
+  "seeds": [
+    11,
+    23,
+    37,
+    53,
+    71
+  ],
+  "aggregated": [
+    {
+      "dataset": "geolife_cells",
+      "detector": "forest",
+      "attempted_bits_per_transition_mean": 0.00232,
+      "attempted_bits_per_transition_std": 8.366600265340741e-05,
+      "n_seeds": 5,
+      "auc_mean": 0.5001041900000002,
+      "auc_std": 8.649095328461313e-06,
+      "auc_min": 0.5001000900000001,
+      "auc_max": 0.5001196600000002,
+      "balanced_accuracy_mean": 0.50005,
+      "balanced_accuracy_std": 0.0,
+      "balanced_accuracy_min": 0.50005,
+      "balanced_accuracy_max": 0.50005,
+      "eer_mean": 0.49995,
+      "eer_std": 0.0,
+      "eer_min": 0.49995,
+      "eer_max": 0.49995
+    },
+    {
+      "dataset": "geolife_cells",
+      "detector": "linear",
+      "attempted_bits_per_transition_mean": 0.00232,
+      "attempted_bits_per_transition_std": 8.366600265340741e-05,
+      "n_seeds": 5,
+      "auc_mean": 0.50019948,
+      "auc_std": 0.0,
+      "auc_min": 0.50019948,
+      "auc_max": 0.50019948,
+      "balanced_accuracy_mean": 0.5001,
+      "balanced_accuracy_std": 0.0,
+      "balanced_accuracy_min": 0.5001,
+      "balanced_accuracy_max": 0.5001,
+      "eer_mean": 0.49990000000000007,
+      "eer_std": 6.206335383118183e-17,
+      "eer_min": 0.4999,
+      "eer_max": 0.4999
+    },
+    {
+      "dataset": "geolife_cells",
+      "detector": "mlp",
+      "attempted_bits_per_transition_mean": 0.00232,
+      "attempted_bits_per_transition_std": 8.366600265340741e-05,
+      "n_seeds": 5,
+      "auc_mean": 0.5001756350000001,
+      "auc_std": 3.1787211068240575e-05,
+      "auc_min": 0.5001407150000001,
+      "auc_max": 0.500214615,
+      "balanced_accuracy_mean": 0.50008,
+      "balanced_accuracy_std": 2.738612787525529e-05,
+      "balanced_accuracy_min": 0.50005,
+      "balanced_accuracy_max": 0.5001,
+      "eer_mean": 0.49992000000000003,
+      "eer_std": 2.738612787525529e-05,
+      "eer_min": 0.4999,
+      "eer_max": 0.49995
+    },
+    {
+      "dataset": "lastfm",
+      "detector": "forest",
+      "attempted_bits_per_transition_mean": 0.0006399999999999999,
+      "attempted_bits_per_transition_std": 5.4772255750516634e-05,
+      "n_seeds": 5,
+      "auc_mean": 0.500040565,
+      "auc_std": 5.362049503221208e-05,
+      "auc_min": 0.500000015,
+      "auc_max": 0.50010033,
+      "balanced_accuracy_mean": 0.5000199999999999,
+      "balanced_accuracy_std": 2.7386127875255288e-05,
+      "balanced_accuracy_min": 0.5,
+      "balanced_accuracy_max": 0.50005,
+      "eer_mean": 0.49998000000000004,
+      "eer_std": 2.7386127875255288e-05,
+      "eer_min": 0.49995,
+      "eer_max": 0.5
+    },
+    {
+      "dataset": "lastfm",
+      "detector": "linear",
+      "attempted_bits_per_transition_mean": 0.0006399999999999999,
+      "attempted_bits_per_transition_std": 5.4772255750516634e-05,
+      "n_seeds": 5,
+      "auc_mean": 0.5001392870000001,
+      "auc_std": 5.386220945615853e-05,
+      "auc_min": 0.5000999050000001,
+      "auc_max": 0.50019842,
+      "balanced_accuracy_mean": 0.50007,
+      "balanced_accuracy_std": 2.738612787525529e-05,
+      "balanced_accuracy_min": 0.50005,
+      "balanced_accuracy_max": 0.5001,
+      "eer_mean": 0.49993,
+      "eer_std": 2.738612787525529e-05,
+      "eer_min": 0.4999,
+      "eer_max": 0.49995
+    },
+    {
+      "dataset": "lastfm",
+      "detector": "mlp",
+      "attempted_bits_per_transition_mean": 0.0006399999999999999,
+      "attempted_bits_per_transition_std": 5.4772255750516634e-05,
+      "n_seeds": 5,
+      "auc_mean": 0.49995992300000003,
+      "auc_std": 8.944255486064566e-05,
+      "auc_min": 0.49990002999999994,
+      "auc_max": 0.50010073,
+      "balanced_accuracy_mean": 0.49998000000000004,
+      "balanced_accuracy_std": 4.472135954999087e-05,
+      "balanced_accuracy_min": 0.49995,
+      "balanced_accuracy_max": 0.50005,
+      "eer_mean": 0.5000199999999999,
+      "eer_std": 4.472135954999087e-05,
+      "eer_min": 0.49995,
+      "eer_max": 0.50005
+    },
+    {
+      "dataset": "mooc",
+      "detector": "forest",
+      "attempted_bits_per_transition_mean": 0.00116,
+      "attempted_bits_per_transition_std": 0.00011401754250991374,
+      "n_seeds": 5,
+      "auc_mean": 0.501059001,
+      "auc_std": 0.00011395777427406632,
+      "auc_min": 0.500898965,
+      "auc_max": 0.501198925,
+      "balanced_accuracy_mean": 0.50053,
+      "balanced_accuracy_std": 5.700877125493114e-05,
+      "balanced_accuracy_min": 0.5004500000000001,
+      "balanced_accuracy_max": 0.5005999999999999,
+      "eer_mean": 0.49946999999999997,
+      "eer_std": 5.700877125496766e-05,
+      "eer_min": 0.4994,
+      "eer_max": 0.49955000000000005
+    },
+    {
+      "dataset": "mooc",
+      "detector": "linear",
+      "attempted_bits_per_transition_mean": 0.00116,
+      "attempted_bits_per_transition_std": 0.00011401754250991374,
+      "n_seeds": 5,
+      "auc_mean": 0.501012891,
+      "auc_std": 0.00010509241215471372,
+      "auc_min": 0.500897595,
+      "auc_max": 0.501183765,
+      "balanced_accuracy_mean": 0.50051,
+      "balanced_accuracy_std": 5.4772255750525775e-05,
+      "balanced_accuracy_min": 0.5004500000000001,
+      "balanced_accuracy_max": 0.5006,
+      "eer_mean": 0.49949000000000005,
+      "eer_std": 5.477225575052325e-05,
+      "eer_min": 0.4994,
+      "eer_max": 0.49955000000000005
+    },
+    {
+      "dataset": "mooc",
+      "detector": "mlp",
+      "attempted_bits_per_transition_mean": 0.00116,
+      "attempted_bits_per_transition_std": 0.00011401754250991374,
+      "n_seeds": 5,
+      "auc_mean": 0.500790056,
+      "auc_std": 0.00045193236379186355,
+      "auc_min": 0.500044155,
+      "auc_max": 0.5011972,
+      "balanced_accuracy_mean": 0.50039,
+      "balanced_accuracy_std": 0.00023558437978781258,
+      "balanced_accuracy_min": 0.5,
+      "balanced_accuracy_max": 0.5006,
+      "eer_mean": 0.49961,
+      "eer_std": 0.00023558437978780372,
+      "eer_min": 0.49939999999999996,
+      "eer_max": 0.5
+    },
+    {
+      "dataset": "t_drive_cells",
+      "detector": "forest",
+      "attempted_bits_per_transition_mean": 0.09935999999999999,
+      "attempted_bits_per_transition_std": 0.0009989994994993728,
+      "n_seeds": 5,
+      "auc_mean": 0.5362142329999999,
+      "auc_std": 0.0008848485904563367,
+      "auc_min": 0.5354898299999999,
+      "auc_max": 0.5373781599999999,
+      "balanced_accuracy_mean": 0.51877,
+      "balanced_accuracy_std": 0.000515509456751266,
+      "balanced_accuracy_min": 0.51835,
+      "balanced_accuracy_max": 0.51945,
+      "eer_mean": 0.4812200000000001,
+      "eer_std": 0.00050818303789088,
+      "eer_min": 0.48055000000000003,
+      "eer_max": 0.48165
+    },
+    {
+      "dataset": "t_drive_cells",
+      "detector": "linear",
+      "attempted_bits_per_transition_mean": 0.09935999999999999,
+      "attempted_bits_per_transition_std": 0.0009989994994993728,
+      "n_seeds": 5,
+      "auc_mean": 0.5319517579999999,
+      "auc_std": 0.0007877143232368683,
+      "auc_min": 0.5313657249999999,
+      "auc_max": 0.533322035,
+      "balanced_accuracy_mean": 0.51833,
+      "balanced_accuracy_std": 0.00046984039843333706,
+      "balanced_accuracy_min": 0.51805,
+      "balanced_accuracy_max": 0.51915,
+      "eer_mean": 0.48178,
+      "eer_std": 0.0004893873721296828,
+      "eer_min": 0.48095,
+      "eer_max": 0.48224999999999996
+    },
+    {
+      "dataset": "t_drive_cells",
+      "detector": "mlp",
+      "attempted_bits_per_transition_mean": 0.09935999999999999,
+      "attempted_bits_per_transition_std": 0.0009989994994993728,
+      "n_seeds": 5,
+      "auc_mean": 0.534531201,
+      "auc_std": 0.0011952436150707848,
+      "auc_min": 0.53324326,
+      "auc_max": 0.536432995,
+      "balanced_accuracy_mean": 0.51826,
+      "balanced_accuracy_std": 0.0005888548208174709,
+      "balanced_accuracy_min": 0.5176000000000001,
+      "balanced_accuracy_max": 0.5192,
+      "eer_mean": 0.48175,
+      "eer_std": 0.000596866819315669,
+      "eer_min": 0.4808,
+      "eer_max": 0.48235
+    },
+    {
+      "dataset": "tgbl-wiki",
+      "detector": "forest",
+      "attempted_bits_per_transition_mean": 0.09926,
+      "attempted_bits_per_transition_std": 0.0016102794788483167,
+      "n_seeds": 5,
+      "auc_mean": 0.575646772,
+      "auc_std": 0.000901247502129705,
+      "auc_min": 0.574745005,
+      "auc_max": 0.57699272,
+      "balanced_accuracy_mean": 0.5397000000000001,
+      "balanced_accuracy_std": 0.00043732139211340333,
+      "balanced_accuracy_min": 0.53925,
+      "balanced_accuracy_max": 0.54035,
+      "eer_mean": 0.4603,
+      "eer_std": 0.000437321392113397,
+      "eer_min": 0.45965,
+      "eer_max": 0.46075
+    },
+    {
+      "dataset": "tgbl-wiki",
+      "detector": "linear",
+      "attempted_bits_per_transition_mean": 0.09926,
+      "attempted_bits_per_transition_std": 0.0016102794788483167,
+      "n_seeds": 5,
+      "auc_mean": 0.555324301,
+      "auc_std": 0.0010236093267538304,
+      "auc_min": 0.5538544350000001,
+      "auc_max": 0.55662327,
+      "balanced_accuracy_mean": 0.5309,
+      "balanced_accuracy_std": 0.0012108881038312251,
+      "balanced_accuracy_min": 0.5291,
+      "balanced_accuracy_max": 0.5323,
+      "eer_mean": 0.46927,
+      "eer_std": 0.0006047726845683306,
+      "eer_min": 0.46840000000000004,
+      "eer_max": 0.46995
+    },
+    {
+      "dataset": "tgbl-wiki",
+      "detector": "mlp",
+      "attempted_bits_per_transition_mean": 0.09926,
+      "attempted_bits_per_transition_std": 0.0016102794788483167,
+      "n_seeds": 5,
+      "auc_mean": 0.5739904709999999,
+      "auc_std": 0.001207603669211266,
+      "auc_min": 0.5726228449999999,
+      "auc_max": 0.5754043099999999,
+      "balanced_accuracy_mean": 0.5389200000000001,
+      "balanced_accuracy_std": 0.0005985398900658036,
+      "balanced_accuracy_min": 0.5382,
+      "balanced_accuracy_max": 0.53975,
+      "eer_mean": 0.46107000000000004,
+      "eer_std": 0.0007302396866782787,
+      "eer_min": 0.46025,
+      "eer_max": 0.4619
+    }
+  ],
+  "per_seed": [
+    {
+      "campaign": "phase7_external_steganalysis",
+      "date": "2026-06-26",
+      "model": {
+        "name": "temporal_source_previous_destination_backoff",
+        "prior_strength": 8.0,
+        "top_k": 32
+      },
+      "codec": {
+        "max_bits_per_transition": 1,
+        "codec_backend": "range",
+        "max_local_total_variation": 0.35,
+        "max_local_kl_bits": 0.6,
+        "min_entropy_bits": 0.5,
+        "cover_when_unsafe": true,
+        "max_encoded_rank_fraction": 0.5
+      },
+      "seed": 11,
+      "detectors": {
+        "tgbl-wiki": {
+          "linear": {
+            "auc": 0.55662327,
+            "balanced_accuracy": 0.5323,
+            "eer": 0.46840000000000004
+          },
+          "forest": {
+            "auc": 0.57699272,
+            "balanced_accuracy": 0.54035,
+            "eer": 0.45965
+          },
+          "mlp": {
+            "auc": 0.575099295,
+            "balanced_accuracy": 0.5391,
+            "eer": 0.46035000000000004
+          }
+        },
+        "mooc": {
+          "linear": {
+            "auc": 0.50097345,
+            "balanced_accuracy": 0.5005,
+            "eer": 0.4995
+          },
+          "forest": {
+            "auc": 0.50099927,
+            "balanced_accuracy": 0.5005,
+            "eer": 0.49949999999999994
+          },
+          "mlp": {
+            "auc": 0.500044155,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          }
+        },
+        "lastfm": {
+          "linear": {
+            "auc": 0.50019842,
+            "balanced_accuracy": 0.5001,
+            "eer": 0.4999
+          },
+          "forest": {
+            "auc": 0.50010033,
+            "balanced_accuracy": 0.50005,
+            "eer": 0.49995
+          },
+          "mlp": {
+            "auc": 0.50010073,
+            "balanced_accuracy": 0.50005,
+            "eer": 0.49995
+          }
+        },
+        "geolife_cells": {
+          "linear": {
+            "auc": 0.50019948,
+            "balanced_accuracy": 0.5001,
+            "eer": 0.4999
+          },
+          "forest": {
+            "auc": 0.5001196600000002,
+            "balanced_accuracy": 0.50005,
+            "eer": 0.49995
+          },
+          "mlp": {
+            "auc": 0.5001407150000001,
+            "balanced_accuracy": 0.50005,
+            "eer": 0.49995
+          }
+        },
+        "t_drive_cells": {
+          "linear": {
+            "auc": 0.533322035,
+            "balanced_accuracy": 0.51915,
+            "eer": 0.48095
+          },
+          "forest": {
+            "auc": 0.5373781599999999,
+            "balanced_accuracy": 0.51945,
+            "eer": 0.48055000000000003
+          },
+          "mlp": {
+            "auc": 0.536432995,
+            "balanced_accuracy": 0.5192,
+            "eer": 0.4808
+          }
+        }
+      },
+      "communication": {
+        "tgbl-wiki": {
+          "test_transitions": 10000,
+          "embed_rate": 0.1015,
+          "cover_rate": 0.8985,
+          "attempted_bits_per_transition": 0.1015,
+          "mean_local_total_variation": 0.01992996819864193,
+          "mean_local_kl_bits": 0.031381790386438936
+        },
+        "mooc": {
+          "test_transitions": 10000,
+          "embed_rate": 0.0011,
+          "cover_rate": 0.9989,
+          "attempted_bits_per_transition": 0.0011,
+          "mean_local_total_variation": 0.00021105413105413105,
+          "mean_local_kl_bits": 0.0003257028135610629
+        },
+        "lastfm": {
+          "test_transitions": 10000,
+          "embed_rate": 0.0007,
+          "cover_rate": 0.9993,
+          "attempted_bits_per_transition": 0.0007,
+          "mean_local_total_variation": 0.0001829519858452711,
+          "mean_local_kl_bits": 0.00031035610146702296
+        },
+        "geolife_cells": {
+          "test_transitions": 10000,
+          "embed_rate": 0.0024,
+          "cover_rate": 0.9976,
+          "attempted_bits_per_transition": 0.0024,
+          "mean_local_total_variation": 0.00045661479166634835,
+          "mean_local_kl_bits": 0.0006570504406756276
+        },
+        "t_drive_cells": {
+          "test_transitions": 10000,
+          "embed_rate": 0.1011,
+          "cover_rate": 0.8989,
+          "attempted_bits_per_transition": 0.1011,
+          "mean_local_total_variation": 0.02184624685465939,
+          "mean_local_kl_bits": 0.03615640113821071
+        }
+      }
+    },
+    {
+      "campaign": "phase7_external_steganalysis",
+      "date": "2026-06-26",
+      "model": {
+        "name": "temporal_source_previous_destination_backoff",
+        "prior_strength": 8.0,
+        "top_k": 32
+      },
+      "codec": {
+        "max_bits_per_transition": 1,
+        "codec_backend": "range",
+        "max_local_total_variation": 0.35,
+        "max_local_kl_bits": 0.6,
+        "min_entropy_bits": 0.5,
+        "cover_when_unsafe": true,
+        "max_encoded_rank_fraction": 0.5
+      },
+      "seed": 23,
+      "detectors": {
+        "tgbl-wiki": {
+          "linear": {
+            "auc": 0.554909765,
+            "balanced_accuracy": 0.53045,
+            "eer": 0.4696
+          },
+          "forest": {
+            "auc": 0.574745005,
+            "balanced_accuracy": 0.53925,
+            "eer": 0.46075
+          },
+          "mlp": {
+            "auc": 0.5726228449999999,
+            "balanced_accuracy": 0.5382,
+            "eer": 0.4619
+          }
+        },
+        "mooc": {
+          "linear": {
+            "auc": 0.501183765,
+            "balanced_accuracy": 0.5006,
+            "eer": 0.4994
+          },
+          "forest": {
+            "auc": 0.501198925,
+            "balanced_accuracy": 0.5005999999999999,
+            "eer": 0.4994
+          },
+          "mlp": {
+            "auc": 0.5011972,
+            "balanced_accuracy": 0.5006,
+            "eer": 0.49939999999999996
+          }
+        },
+        "lastfm": {
+          "linear": {
+            "auc": 0.500099975,
+            "balanced_accuracy": 0.50005,
+            "eer": 0.49995
+          },
+          "forest": {
+            "auc": 0.500098205,
+            "balanced_accuracy": 0.50005,
+            "eer": 0.49995
+          },
+          "mlp": {
+            "auc": 0.499900065,
+            "balanced_accuracy": 0.49995,
+            "eer": 0.50005
+          }
+        },
+        "geolife_cells": {
+          "linear": {
+            "auc": 0.50019948,
+            "balanced_accuracy": 0.5001,
+            "eer": 0.4999
+          },
+          "forest": {
+            "auc": 0.50010036,
+            "balanced_accuracy": 0.50005,
+            "eer": 0.49995
+          },
+          "mlp": {
+            "auc": 0.500175425,
+            "balanced_accuracy": 0.5001,
+            "eer": 0.4999
+          }
+        },
+        "t_drive_cells": {
+          "linear": {
+            "auc": 0.5317811800000001,
+            "balanced_accuracy": 0.5183,
+            "eer": 0.48190000000000005
+          },
+          "forest": {
+            "auc": 0.5369548650000001,
+            "balanced_accuracy": 0.5192,
+            "eer": 0.4808
+          },
+          "mlp": {
+            "auc": 0.5342857649999999,
+            "balanced_accuracy": 0.51825,
+            "eer": 0.48175
+          }
+        }
+      },
+      "communication": {
+        "tgbl-wiki": {
+          "test_transitions": 10000,
+          "embed_rate": 0.0975,
+          "cover_rate": 0.9025,
+          "attempted_bits_per_transition": 0.0975,
+          "mean_local_total_variation": 0.019337018126146674,
+          "mean_local_kl_bits": 0.030907746367772864
+        },
+        "mooc": {
+          "test_transitions": 10000,
+          "embed_rate": 0.0013,
+          "cover_rate": 0.9987,
+          "attempted_bits_per_transition": 0.0013,
+          "mean_local_total_variation": 0.0002747578347578348,
+          "mean_local_kl_bits": 0.00043891208874417077
+        },
+        "lastfm": {
+          "test_transitions": 10000,
+          "embed_rate": 0.0006,
+          "cover_rate": 0.9994,
+          "attempted_bits_per_transition": 0.0006,
+          "mean_local_total_variation": 0.00015332235621564146,
+          "mean_local_kl_bits": 0.00025783893218254094
+        },
+        "geolife_cells": {
+          "test_transitions": 10000,
+          "embed_rate": 0.0023,
+          "cover_rate": 0.9977,
+          "attempted_bits_per_transition": 0.0023,
+          "mean_local_total_variation": 0.00045031849537005206,
+          "mean_local_kl_bits": 0.0006595006093061797
+        },
+        "t_drive_cells": {
+          "test_transitions": 10000,
+          "embed_rate": 0.0993,
+          "cover_rate": 0.9007,
+          "attempted_bits_per_transition": 0.0993,
+          "mean_local_total_variation": 0.021525290625703165,
+          "mean_local_kl_bits": 0.035752050691630524
+        }
+      }
+    },
+    {
+      "campaign": "phase7_external_steganalysis",
+      "date": "2026-06-26",
+      "model": {
+        "name": "temporal_source_previous_destination_backoff",
+        "prior_strength": 8.0,
+        "top_k": 32
+      },
+      "codec": {
+        "max_bits_per_transition": 1,
+        "codec_backend": "range",
+        "max_local_total_variation": 0.35,
+        "max_local_kl_bits": 0.6,
+        "min_entropy_bits": 0.5,
+        "cover_when_unsafe": true,
+        "max_encoded_rank_fraction": 0.5
+      },
+      "seed": 37,
+      "detectors": {
+        "tgbl-wiki": {
+          "linear": {
+            "auc": 0.555623005,
+            "balanced_accuracy": 0.5311,
+            "eer": 0.46895
+          },
+          "forest": {
+            "auc": 0.576095295,
+            "balanced_accuracy": 0.5399,
+            "eer": 0.4601
+          },
+          "mlp": {
+            "auc": 0.5754043099999999,
+            "balanced_accuracy": 0.53975,
+            "eer": 0.46025
+          }
+        },
+        "mooc": {
+          "linear": {
+            "auc": 0.5010042,
+            "balanced_accuracy": 0.5005,
+            "eer": 0.49949999999999994
+          },
+          "forest": {
+            "auc": 0.50109887,
+            "balanced_accuracy": 0.50055,
+            "eer": 0.49944999999999995
+          },
+          "mlp": {
+            "auc": 0.50109708,
+            "balanced_accuracy": 0.50055,
+            "eer": 0.49945
+          }
+        },
+        "lastfm": {
+          "linear": {
+            "auc": 0.5000999050000001,
+            "balanced_accuracy": 0.50005,
+            "eer": 0.49995
+          },
+          "forest": {
+            "auc": 0.5000000450000001,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          },
+          "mlp": {
+            "auc": 0.49990002999999994,
+            "balanced_accuracy": 0.49995,
+            "eer": 0.50005
+          }
+        },
+        "geolife_cells": {
+          "linear": {
+            "auc": 0.50019948,
+            "balanced_accuracy": 0.5001,
+            "eer": 0.4999
+          },
+          "forest": {
+            "auc": 0.5001000900000001,
+            "balanced_accuracy": 0.50005,
+            "eer": 0.49995
+          },
+          "mlp": {
+            "auc": 0.50014826,
+            "balanced_accuracy": 0.5001,
+            "eer": 0.49995
+          }
+        },
+        "t_drive_cells": {
+          "linear": {
+            "auc": 0.5313657249999999,
+            "balanced_accuracy": 0.51805,
+            "eer": 0.48224999999999996
+          },
+          "forest": {
+            "auc": 0.5354898299999999,
+            "balanced_accuracy": 0.51835,
+            "eer": 0.48165
+          },
+          "mlp": {
+            "auc": 0.53324326,
+            "balanced_accuracy": 0.5176000000000001,
+            "eer": 0.48235
+          }
+        }
+      },
+      "communication": {
+        "tgbl-wiki": {
+          "test_transitions": 10000,
+          "embed_rate": 0.1003,
+          "cover_rate": 0.8997,
+          "attempted_bits_per_transition": 0.1003,
+          "mean_local_total_variation": 0.019644895743930687,
+          "mean_local_kl_bits": 0.031025949135863005
+        },
+        "mooc": {
+          "test_transitions": 10000,
+          "embed_rate": 0.0012,
+          "cover_rate": 0.9988,
+          "attempted_bits_per_transition": 0.0012,
+          "mean_local_total_variation": 0.0002866096866096866,
+          "mean_local_kl_bits": 0.00047411544442644996
+        },
+        "lastfm": {
+          "test_transitions": 10000,
+          "embed_rate": 0.0006,
+          "cover_rate": 0.9994,
+          "attempted_bits_per_transition": 0.0006,
+          "mean_local_total_variation": 0.00015332235621564146,
+          "mean_local_kl_bits": 0.00025783893218254094
+        },
+        "geolife_cells": {
+          "test_transitions": 10000,
+          "embed_rate": 0.0024,
+          "cover_rate": 0.9976,
+          "attempted_bits_per_transition": 0.0024,
+          "mean_local_total_variation": 0.00045661479166634835,
+          "mean_local_kl_bits": 0.0006570504406756276
+        },
+        "t_drive_cells": {
+          "test_transitions": 10000,
+          "embed_rate": 0.0987,
+          "cover_rate": 0.9013,
+          "attempted_bits_per_transition": 0.0987,
+          "mean_local_total_variation": 0.021458751905164445,
+          "mean_local_kl_bits": 0.035552920952546065
+        }
+      }
+    },
+    {
+      "campaign": "phase7_external_steganalysis",
+      "date": "2026-06-26",
+      "model": {
+        "name": "temporal_source_previous_destination_backoff",
+        "prior_strength": 8.0,
+        "top_k": 32
+      },
+      "codec": {
+        "max_bits_per_transition": 1,
+        "codec_backend": "range",
+        "max_local_total_variation": 0.35,
+        "max_local_kl_bits": 0.6,
+        "min_entropy_bits": 0.5,
+        "cover_when_unsafe": true,
+        "max_encoded_rank_fraction": 0.5
+      },
+      "seed": 53,
+      "detectors": {
+        "tgbl-wiki": {
+          "linear": {
+            "auc": 0.55561103,
+            "balanced_accuracy": 0.53155,
+            "eer": 0.46945000000000003
+          },
+          "forest": {
+            "auc": 0.5750895249999999,
+            "balanced_accuracy": 0.5394,
+            "eer": 0.4606
+          },
+          "mlp": {
+            "auc": 0.573596445,
+            "balanced_accuracy": 0.53905,
+            "eer": 0.46140000000000003
+          }
+        },
+        "mooc": {
+          "linear": {
+            "auc": 0.501005445,
+            "balanced_accuracy": 0.5005,
+            "eer": 0.4995
+          },
+          "forest": {
+            "auc": 0.501098975,
+            "balanced_accuracy": 0.50055,
+            "eer": 0.49945
+          },
+          "mlp": {
+            "auc": 0.50080002,
+            "balanced_accuracy": 0.5004,
+            "eer": 0.49960000000000004
+          }
+        },
+        "lastfm": {
+          "linear": {
+            "auc": 0.500099975,
+            "balanced_accuracy": 0.50005,
+            "eer": 0.49995
+          },
+          "forest": {
+            "auc": 0.500000015,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          },
+          "mlp": {
+            "auc": 0.4999005,
+            "balanced_accuracy": 0.49995,
+            "eer": 0.50005
+          }
+        },
+        "geolife_cells": {
+          "linear": {
+            "auc": 0.50019948,
+            "balanced_accuracy": 0.5001,
+            "eer": 0.4999
+          },
+          "forest": {
+            "auc": 0.5001003900000001,
+            "balanced_accuracy": 0.50005,
+            "eer": 0.49995
+          },
+          "mlp": {
+            "auc": 0.500214615,
+            "balanced_accuracy": 0.5001,
+            "eer": 0.4999
+          }
+        },
+        "t_drive_cells": {
+          "linear": {
+            "auc": 0.5317923899999999,
+            "balanced_accuracy": 0.5181,
+            "eer": 0.48185
+          },
+          "forest": {
+            "auc": 0.535685075,
+            "balanced_accuracy": 0.5184500000000001,
+            "eer": 0.48150000000000004
+          },
+          "mlp": {
+            "auc": 0.5347411449999999,
+            "balanced_accuracy": 0.51825,
+            "eer": 0.48169999999999996
+          }
+        }
+      },
+      "communication": {
+        "tgbl-wiki": {
+          "test_transitions": 10000,
+          "embed_rate": 0.0986,
+          "cover_rate": 0.9014,
+          "attempted_bits_per_transition": 0.0986,
+          "mean_local_total_variation": 0.019427488483747583,
+          "mean_local_kl_bits": 0.030852785501594236
+        },
+        "mooc": {
+          "test_transitions": 10000,
+          "embed_rate": 0.0012,
+          "cover_rate": 0.9988,
+          "attempted_bits_per_transition": 0.0012,
+          "mean_local_total_variation": 0.00025438746438746437,
+          "mean_local_kl_bits": 0.0004258197142000032
+        },
+        "lastfm": {
+          "test_transitions": 10000,
+          "embed_rate": 0.0006,
+          "cover_rate": 0.9994,
+          "attempted_bits_per_transition": 0.0006,
+          "mean_local_total_variation": 0.00015332235621564146,
+          "mean_local_kl_bits": 0.00025783893218254094
+        },
+        "geolife_cells": {
+          "test_transitions": 10000,
+          "embed_rate": 0.0023,
+          "cover_rate": 0.9977,
+          "attempted_bits_per_transition": 0.0023,
+          "mean_local_total_variation": 0.000443281458333015,
+          "mean_local_kl_bits": 0.0006517293377188198
+        },
+        "t_drive_cells": {
+          "test_transitions": 10000,
+          "embed_rate": 0.0989,
+          "cover_rate": 0.9011,
+          "attempted_bits_per_transition": 0.0989,
+          "mean_local_total_variation": 0.0214672973597099,
+          "mean_local_kl_bits": 0.035670917067235
+        }
+      }
+    },
+    {
+      "campaign": "phase7_external_steganalysis",
+      "date": "2026-06-26",
+      "model": {
+        "name": "temporal_source_previous_destination_backoff",
+        "prior_strength": 8.0,
+        "top_k": 32
+      },
+      "codec": {
+        "max_bits_per_transition": 1,
+        "codec_backend": "range",
+        "max_local_total_variation": 0.35,
+        "max_local_kl_bits": 0.6,
+        "min_entropy_bits": 0.5,
+        "cover_when_unsafe": true,
+        "max_encoded_rank_fraction": 0.5
+      },
+      "seed": 71,
+      "detectors": {
+        "tgbl-wiki": {
+          "linear": {
+            "auc": 0.5538544350000001,
+            "balanced_accuracy": 0.5291,
+            "eer": 0.46995
+          },
+          "forest": {
+            "auc": 0.575311315,
+            "balanced_accuracy": 0.5396,
+            "eer": 0.46040000000000003
+          },
+          "mlp": {
+            "auc": 0.57322946,
+            "balanced_accuracy": 0.5385,
+            "eer": 0.46145
+          }
+        },
+        "mooc": {
+          "linear": {
+            "auc": 0.500897595,
+            "balanced_accuracy": 0.5004500000000001,
+            "eer": 0.49955000000000005
+          },
+          "forest": {
+            "auc": 0.500898965,
+            "balanced_accuracy": 0.5004500000000001,
+            "eer": 0.49955000000000005
+          },
+          "mlp": {
+            "auc": 0.500811825,
+            "balanced_accuracy": 0.5004,
+            "eer": 0.4996
+          }
+        },
+        "lastfm": {
+          "linear": {
+            "auc": 0.5001981600000001,
+            "balanced_accuracy": 0.5001,
+            "eer": 0.4999
+          },
+          "forest": {
+            "auc": 0.5000042299999999,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          },
+          "mlp": {
+            "auc": 0.49999828999999996,
+            "balanced_accuracy": 0.5,
+            "eer": 0.5
+          }
+        },
+        "geolife_cells": {
+          "linear": {
+            "auc": 0.50019948,
+            "balanced_accuracy": 0.5001,
+            "eer": 0.4999
+          },
+          "forest": {
+            "auc": 0.5001004500000001,
+            "balanced_accuracy": 0.50005,
+            "eer": 0.49995
+          },
+          "mlp": {
+            "auc": 0.50019916,
+            "balanced_accuracy": 0.50005,
+            "eer": 0.4999
+          }
+        },
+        "t_drive_cells": {
+          "linear": {
+            "auc": 0.53149746,
+            "balanced_accuracy": 0.51805,
+            "eer": 0.48195
+          },
+          "forest": {
+            "auc": 0.5355632349999999,
+            "balanced_accuracy": 0.5184,
+            "eer": 0.48160000000000003
+          },
+          "mlp": {
+            "auc": 0.53395284,
+            "balanced_accuracy": 0.518,
+            "eer": 0.48215
+          }
+        }
+      },
+      "communication": {
+        "tgbl-wiki": {
+          "test_transitions": 10000,
+          "embed_rate": 0.0984,
+          "cover_rate": 0.9016,
+          "attempted_bits_per_transition": 0.0984,
+          "mean_local_total_variation": 0.019408889265344776,
+          "mean_local_kl_bits": 0.030878117983602543
+        },
+        "mooc": {
+          "test_transitions": 10000,
+          "embed_rate": 0.001,
+          "cover_rate": 0.999,
+          "attempted_bits_per_transition": 0.001,
+          "mean_local_total_variation": 0.00023216524216524212,
+          "mean_local_kl_bits": 0.0004003309639836564
+        },
+        "lastfm": {
+          "test_transitions": 10000,
+          "embed_rate": 0.0007,
+          "cover_rate": 0.9993,
+          "attempted_bits_per_transition": 0.0007,
+          "mean_local_total_variation": 0.0001829519858452711,
+          "mean_local_kl_bits": 0.00031035610146702296
+        },
+        "geolife_cells": {
+          "test_transitions": 10000,
+          "embed_rate": 0.0022,
+          "cover_rate": 0.9978,
+          "attempted_bits_per_transition": 0.0022,
+          "mean_local_total_variation": 0.0004299481249996817,
+          "mean_local_kl_bits": 0.0006464082347620121
+        },
+        "t_drive_cells": {
+          "test_transitions": 10000,
+          "embed_rate": 0.0988,
+          "cover_rate": 0.9012,
+          "attempted_bits_per_transition": 0.0988,
+          "mean_local_total_variation": 0.021585714868127406,
+          "mean_local_kl_bits": 0.035828486180677556
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,218 @@
+{
+  "campaign": "phase11_distribution_audit",
+  "source_records": "results\\tables\\phase7_steganalysis_records.csv",
+  "feature_columns": [
+    "action_probability",
+    "surprise_bits",
+    "rank_fraction",
+    "is_top_action",
+    "entropy_bits",
+    "top_probability",
+    "candidate_count",
+    "unseen_context",
+    "unseen_destination",
+    "same_as_previous",
+    "self_loop",
+    "log_inter_event_gap"
+  ],
+  "discrete_columns": [
+    "is_top_action",
+    "unseen_context",
+    "unseen_destination",
+    "same_as_previous",
+    "self_loop",
+    "embedding_feasible"
+  ],
+  "datasets": {
+    "geolife_cells": {
+      "test": {
+        "rows_per_label": 10000,
+        "mmd_rbf": 0.0001838048120617053,
+        "mean_wasserstein": 5.198746579005241e-05,
+        "max_wasserstein": 0.0001788495894806288,
+        "max_abs_mean_difference": 0.0001788495894805564,
+        "min_permutation_p": 0.985,
+        "mean_discrete_js_bits": 9.708959281860183e-08,
+        "max_discrete_js_bits": 3.814755768274665e-07,
+        "discrete_js_bits": {
+          "is_top_action": 8.40783910325242e-09,
+          "unseen_context": 0.0,
+          "unseen_destination": 0.0,
+          "same_as_previous": 1.9265414098089206e-07,
+          "self_loop": 3.814755768274665e-07,
+          "embedding_feasible": 0.0
+        }
+      },
+      "validation": {
+        "rows_per_label": 10000,
+        "mmd_rbf": 0.0,
+        "mean_wasserstein": 4.6385782272928594e-05,
+        "max_wasserstein": 0.0004190001529629228,
+        "max_abs_mean_difference": 0.0004190001529629228,
+        "min_permutation_p": 0.99,
+        "mean_discrete_js_bits": 1.2753617956966139e-08,
+        "max_discrete_js_bits": 7.652170774179683e-08,
+        "discrete_js_bits": {
+          "is_top_action": 0.0,
+          "unseen_context": 0.0,
+          "unseen_destination": 0.0,
+          "same_as_previous": 7.652170774179683e-08,
+          "self_loop": 0.0,
+          "embedding_feasible": 0.0
+        }
+      }
+    },
+    "lastfm": {
+      "test": {
+        "rows_per_label": 10000,
+        "mmd_rbf": 0.0,
+        "mean_wasserstein": 3.0989090649137974e-05,
+        "max_wasserstein": 0.00014594316186372974,
+        "max_abs_mean_difference": 0.00014594316186222756,
+        "min_permutation_p": 0.945,
+        "mean_discrete_js_bits": 8.045379229775565e-08,
+        "max_discrete_js_bits": 4.827227537865339e-07,
+        "discrete_js_bits": {
+          "is_top_action": 4.827227537865339e-07,
+          "unseen_context": 0.0,
+          "unseen_destination": 0.0,
+          "same_as_previous": 0.0,
+          "self_loop": 0.0,
+          "embedding_feasible": 0.0
+        }
+      },
+      "validation": {
+        "rows_per_label": 10000,
+        "mmd_rbf": 0.00023060364333438166,
+        "mean_wasserstein": 4.902260034931434e-05,
+        "max_wasserstein": 0.00034594316186372975,
+        "max_abs_mean_difference": 0.0003459431618635378,
+        "min_permutation_p": 0.785,
+        "mean_discrete_js_bits": 1.824874117564244e-07,
+        "max_discrete_js_bits": 1.0949244705385464e-06,
+        "discrete_js_bits": {
+          "is_top_action": 1.0949244705385464e-06,
+          "unseen_context": 0.0,
+          "unseen_destination": 0.0,
+          "same_as_previous": 0.0,
+          "self_loop": 0.0,
+          "embedding_feasible": 0.0
+        }
+      }
+    },
+    "mooc": {
+      "test": {
+        "rows_per_label": 10000,
+        "mmd_rbf": 0.0,
+        "mean_wasserstein": 0.0002808834128159509,
+        "max_wasserstein": 0.0014977756926328166,
+        "max_abs_mean_difference": 0.001497775692630654,
+        "min_permutation_p": 0.62,
+        "mean_discrete_js_bits": 5.34928821065191e-07,
+        "max_discrete_js_bits": 2.7513906755418586e-06,
+        "discrete_js_bits": {
+          "is_top_action": 2.7513906755418586e-06,
+          "unseen_context": 0.0,
+          "unseen_destination": 4.5818225084928764e-07,
+          "same_as_previous": 0.0,
+          "self_loop": 0.0,
+          "embedding_feasible": 0.0
+        }
+      },
+      "validation": {
+        "rows_per_label": 10000,
+        "mmd_rbf": 2.995248631565417e-05,
+        "mean_wasserstein": 0.0003630497122972525,
+        "max_wasserstein": 0.0019470727380432205,
+        "max_abs_mean_difference": 0.0019470727380426212,
+        "min_permutation_p": 0.38,
+        "mean_discrete_js_bits": 2.985284994822125e-06,
+        "max_discrete_js_bits": 1.7861880980769276e-05,
+        "discrete_js_bits": {
+          "is_top_action": 1.7861880980769276e-05,
+          "unseen_context": 0.0,
+          "unseen_destination": 4.98289881634736e-08,
+          "same_as_previous": 0.0,
+          "self_loop": 0.0,
+          "embedding_feasible": 0.0
+        }
+      }
+    },
+    "t_drive_cells": {
+      "test": {
+        "rows_per_label": 10000,
+        "mmd_rbf": 0.0004071974123445177,
+        "mean_wasserstein": 0.008435368438311717,
+        "max_wasserstein": 0.03529031983725248,
+        "max_abs_mean_difference": 0.035290319837252504,
+        "min_permutation_p": 0.005,
+        "mean_discrete_js_bits": 0.00012201389293017897,
+        "max_discrete_js_bits": 0.00034431330189282384,
+        "discrete_js_bits": {
+          "is_top_action": 0.00034431330189282384,
+          "unseen_context": 0.0,
+          "unseen_destination": 2.607598816179433e-07,
+          "same_as_previous": 0.00015267989206615377,
+          "self_loop": 0.00023482940374047832,
+          "embedding_feasible": 0.0
+        }
+      },
+      "validation": {
+        "rows_per_label": 10000,
+        "mmd_rbf": 0.0,
+        "mean_wasserstein": 0.007959735313950804,
+        "max_wasserstein": 0.03716170649742194,
+        "max_abs_mean_difference": 0.037161706497421676,
+        "min_permutation_p": 0.03,
+        "mean_discrete_js_bits": 8.835205262408617e-05,
+        "max_discrete_js_bits": 0.00022676106360489372,
+        "discrete_js_bits": {
+          "is_top_action": 0.00022676106360489372,
+          "unseen_context": 0.0,
+          "unseen_destination": 5.870623243334379e-07,
+          "same_as_previous": 0.00013076829345236816,
+          "self_loop": 0.0001719958963629217,
+          "embedding_feasible": 0.0
+        }
+      }
+    },
+    "tgbl-wiki": {
+      "test": {
+        "rows_per_label": 10000,
+        "mmd_rbf": 0.0014174256906942517,
+        "mean_wasserstein": 0.029314928463187118,
+        "max_wasserstein": 0.22992650930199784,
+        "max_abs_mean_difference": 0.22992650930199776,
+        "min_permutation_p": 0.005,
+        "mean_discrete_js_bits": 0.0003554838024495981,
+        "max_discrete_js_bits": 0.001267541982053682,
+        "discrete_js_bits": {
+          "is_top_action": 0.001267541982053682,
+          "unseen_context": 0.0,
+          "unseen_destination": 0.0002606294503085327,
+          "same_as_previous": 0.0006047313823353741,
+          "self_loop": 0.0,
+          "embedding_feasible": 0.0
+        }
+      },
+      "validation": {
+        "rows_per_label": 10000,
+        "mmd_rbf": 0.00013883917313139982,
+        "mean_wasserstein": 0.023792513189781553,
+        "max_wasserstein": 0.18832972556757574,
+        "max_abs_mean_difference": 0.18832972556757444,
+        "min_permutation_p": 0.005,
+        "mean_discrete_js_bits": 0.000193188022428816,
+        "max_discrete_js_bits": 0.0005881018244182426,
+        "discrete_js_bits": {
+          "is_top_action": 0.0005881018244182426,
+          "unseen_context": 0.0,
+          "unseen_destination": 0.0002650131721354575,
+          "same_as_previous": 0.00030601313801919584,
+          "self_loop": 0.0,
+          "embedding_feasible": 0.0
+        }
+      }
+    }
+  }
+}

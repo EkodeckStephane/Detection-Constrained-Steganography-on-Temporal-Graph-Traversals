@@ -1,0 +1,23 @@
+campaign: lee_baselines_temporal
+date: 2026-06-26
+datasets:
+  - tgbl-wiki
+  - mooc
+  - lastfm
+  - geolife_cells
+  - t_drive_cells
+event_datasets:
+  - id: geolife_cells
+    processed_path: datasets/processed/geolife_cells/events.parquet
+  - id: t_drive_cells
+    processed_path: datasets/processed/t_drive_cells/events.parquet
+max_rows_per_split: 10000
+seed: 20260626
+message_bytes:
+  - 8
+  - 16
+  - 32
+adabind:
+  max_iterations: 10000
+  sampled_edges: 50
+  extra_target_edges: 5

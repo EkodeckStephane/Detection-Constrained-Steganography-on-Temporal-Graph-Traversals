@@ -1,0 +1,37 @@
+{
+  "campaign": "proposition_on_terrorists",
+  "date": "2026-06-26",
+  "dataset": "terrorists-911",
+  "n_edges": 152,
+  "n_nodes": 62,
+  "walks": {
+    "n_walks": 100,
+    "walk_length": 50,
+    "total_transitions": 321
+  },
+  "communication": {
+    "test_transitions": 65,
+    "embed_rate": 0.18461538461538463,
+    "cover_rate": 0.8153846153846154,
+    "attempted_bits_per_transition": 0.18461538461538463,
+    "mean_local_total_variation": 0.03371581504914838,
+    "mean_local_kl_bits": 0.0474670684180074
+  },
+  "detectors": {
+    "linear": {
+      "auc": 0.5409467455621302,
+      "balanced_accuracy": 0.5307692307692308,
+      "eer": 0.46923076923076923
+    },
+    "forest": {
+      "auc": 0.5563313609467456,
+      "balanced_accuracy": 0.5384615384615384,
+      "eer": 0.4615384615384615
+    },
+    "mlp": {
+      "auc": 0.5397633136094674,
+      "balanced_accuracy": 0.523076923076923,
+      "eer": 0.47692307692307695
+    }
+  }
+}

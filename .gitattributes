@@ -1,0 +1,29 @@
+* text=auto
+
+.gitattributes text eol=lf
+*.bat text eol=crlf
+*.bib text eol=lf
+*.bst text eol=lf
+*.cls text eol=lf
+*.csv text eol=lf
+*.ini text eol=lf
+*.ipynb text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.py text eol=lf
+*.sty text eol=lf
+*.tex text eol=lf
+*.tikz text eol=lf
+*.toml text eol=lf
+*.txt text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+
+*.gz binary
+*.jpeg binary
+*.jpg binary
+*.parquet binary
+*.pdf binary
+*.pkl binary
+*.png binary
+*.zip binary

@@ -1,0 +1,70 @@
+campaign: variant_neural_cover_models
+date: 2026-06-26
+datasets:
+  - tgbl-wiki
+  - mooc
+  - lastfm
+  - geolife_cells
+  - t_drive_cells
+event_datasets:
+  - id: geolife_cells
+    processed_path: datasets/processed/geolife_cells/events.parquet
+  - id: t_drive_cells
+    processed_path: datasets/processed/t_drive_cells/events.parquet
+max_rows_per_split: 10000
+cover_models:
+  - name: backoff
+    kind: backoff
+    params:
+      prior_strength: 8.0
+      top_k: 32
+  - name: gru
+    kind: gru
+    params:
+      context_length: 8
+      embedding_dim: 32
+      hidden_dim: 64
+      epochs: 1
+      batch_size: 128
+      learning_rate: 0.003
+      top_k: 32
+  - name: transformer
+    kind: transformer
+    params:
+      context_length: 8
+      embedding_dim: 32
+      hidden_dim: 64
+      epochs: 1
+      batch_size: 128
+      learning_rate: 0.003
+      top_k: 32
+  - name: temporal_graph_encoder
+    kind: temporal_gnn
+    params:
+      embedding_dim: 32
+      hidden_dim: 64
+      epochs: 20
+      batch_size: 256
+      learning_rate: 0.003
+      patience: 5
+      dropout: 0.2
+      top_k: 32
+codec:
+  max_bits_per_transition: 1
+  codec_backend: range
+  max_local_total_variation: 0.35
+  max_local_kl_bits: 0.60
+  min_entropy_bits: 0.5
+  cover_when_unsafe: true
+  max_encoded_rank_fraction: 0.5
+detectors:
+  - linear
+  - forest
+  - mlp
+seed: 20260626
+seeds:
+  - 11
+  - 23
+  - 37
+  - 53
+  - 71

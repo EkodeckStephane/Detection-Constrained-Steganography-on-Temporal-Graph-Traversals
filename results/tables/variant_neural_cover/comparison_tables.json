@@ -1,0 +1,247 @@
+{
+  "sota_temporal_datasets": [
+    {
+      "dataset": "geolife_cells",
+      "n_edges": 118,
+      "ada_max_payload_bpe": 1.3617,
+      "ada_added_edges_at_max": 70,
+      "ada_message_bytes_at_max": 32.0,
+      "max_auc_detector": "linear",
+      "proposition_max_auc": 0.5002,
+      "proposition_bits_per_transition": 0.0023
+    },
+    {
+      "dataset": "lastfm",
+      "n_edges": 14042,
+      "ada_max_payload_bpe": 0.0182,
+      "ada_added_edges_at_max": 0,
+      "ada_message_bytes_at_max": 32.0,
+      "max_auc_detector": "linear",
+      "proposition_max_auc": 0.5001,
+      "proposition_bits_per_transition": 0.0006
+    },
+    {
+      "dataset": "mooc",
+      "n_edges": 17083,
+      "ada_max_payload_bpe": 0.015,
+      "ada_added_edges_at_max": 0,
+      "ada_message_bytes_at_max": 32.0,
+      "max_auc_detector": "forest",
+      "proposition_max_auc": 0.5011,
+      "proposition_bits_per_transition": 0.0012
+    },
+    {
+      "dataset": "t_drive_cells",
+      "n_edges": 6704,
+      "ada_max_payload_bpe": 0.0382,
+      "ada_added_edges_at_max": 0,
+      "ada_message_bytes_at_max": 32.0,
+      "max_auc_detector": "forest",
+      "proposition_max_auc": 0.5362,
+      "proposition_bits_per_transition": 0.0994
+    },
+    {
+      "dataset": "tgbl-wiki",
+      "n_edges": 5316,
+      "ada_max_payload_bpe": 0.0482,
+      "ada_added_edges_at_max": 0,
+      "ada_message_bytes_at_max": 32.0,
+      "max_auc_detector": "forest",
+      "proposition_max_auc": 0.5756,
+      "proposition_bits_per_transition": 0.0993
+    }
+  ],
+  "sota_terrorists_911": [
+    {
+      "method": "BIND (8 B)",
+      "payload_bpe": 0.4211,
+      "added_edges": 0,
+      "topology_modified": false,
+      "max_auc": NaN
+    },
+    {
+      "method": "BIND (16 B)",
+      "payload_bpe": 0.8421,
+      "added_edges": 0,
+      "topology_modified": false,
+      "max_auc": NaN
+    },
+    {
+      "method": "BIND (24 B)",
+      "payload_bpe": 1.2632,
+      "added_edges": 0,
+      "topology_modified": false,
+      "max_auc": NaN
+    },
+    {
+      "method": "AdaBIND",
+      "payload_bpe": 0.4025,
+      "added_edges": 7,
+      "topology_modified": true,
+      "max_auc": NaN
+    },
+    {
+      "method": "BYNIS (0 extra)",
+      "payload_bpe": 7.2,
+      "added_edges": 0,
+      "topology_modified": false,
+      "max_auc": NaN
+    },
+    {
+      "method": "BYNIS (50 extra)",
+      "payload_bpe": 2.0571,
+      "added_edges": 50,
+      "topology_modified": true,
+      "max_auc": NaN
+    },
+    {
+      "method": "Proposition (backoff)",
+      "payload_bpe": 0.1846,
+      "added_edges": 0,
+      "topology_modified": false,
+      "max_auc": 0.5563
+    }
+  ],
+  "variant_cover_models": [
+    {
+      "dataset": "geolife_cells",
+      "cover_model": "backoff",
+      "attempted_bits_per_transition": 0.0011,
+      "max_auc": 0.5001,
+      "max_auc_detector": "forest"
+    },
+    {
+      "dataset": "geolife_cells",
+      "cover_model": "gru",
+      "attempted_bits_per_transition": 0.3159,
+      "max_auc": 0.5018,
+      "max_auc_detector": "forest"
+    },
+    {
+      "dataset": "geolife_cells",
+      "cover_model": "temporal_graph_encoder",
+      "attempted_bits_per_transition": 0.2968,
+      "max_auc": 0.5802,
+      "max_auc_detector": "forest"
+    },
+    {
+      "dataset": "geolife_cells",
+      "cover_model": "transformer",
+      "attempted_bits_per_transition": 0.3363,
+      "max_auc": 0.5026,
+      "max_auc_detector": "forest"
+    },
+    {
+      "dataset": "lastfm",
+      "cover_model": "backoff",
+      "attempted_bits_per_transition": 0.0711,
+      "max_auc": 0.5076,
+      "max_auc_detector": "forest"
+    },
+    {
+      "dataset": "lastfm",
+      "cover_model": "gru",
+      "attempted_bits_per_transition": 0.0003,
+      "max_auc": 0.5001,
+      "max_auc_detector": "linear"
+    },
+    {
+      "dataset": "lastfm",
+      "cover_model": "temporal_graph_encoder",
+      "attempted_bits_per_transition": 0.0,
+      "max_auc": 0.5,
+      "max_auc_detector": "mlp"
+    },
+    {
+      "dataset": "lastfm",
+      "cover_model": "transformer",
+      "attempted_bits_per_transition": 0.0004,
+      "max_auc": 0.5003,
+      "max_auc_detector": "linear"
+    },
+    {
+      "dataset": "mooc",
+      "cover_model": "backoff",
+      "attempted_bits_per_transition": 0.0343,
+      "max_auc": 0.5052,
+      "max_auc_detector": "forest"
+    },
+    {
+      "dataset": "mooc",
+      "cover_model": "gru",
+      "attempted_bits_per_transition": 0.861,
+      "max_auc": 0.9874,
+      "max_auc_detector": "forest"
+    },
+    {
+      "dataset": "mooc",
+      "cover_model": "temporal_graph_encoder",
+      "attempted_bits_per_transition": 0.0,
+      "max_auc": 0.5,
+      "max_auc_detector": "forest"
+    },
+    {
+      "dataset": "mooc",
+      "cover_model": "transformer",
+      "attempted_bits_per_transition": 0.5543,
+      "max_auc": 0.8643,
+      "max_auc_detector": "forest"
+    },
+    {
+      "dataset": "t_drive_cells",
+      "cover_model": "backoff",
+      "attempted_bits_per_transition": 0.2471,
+      "max_auc": 0.5365,
+      "max_auc_detector": "forest"
+    },
+    {
+      "dataset": "t_drive_cells",
+      "cover_model": "gru",
+      "attempted_bits_per_transition": 0.0276,
+      "max_auc": 0.5046,
+      "max_auc_detector": "forest"
+    },
+    {
+      "dataset": "t_drive_cells",
+      "cover_model": "temporal_graph_encoder",
+      "attempted_bits_per_transition": 0.0002,
+      "max_auc": 0.5002,
+      "max_auc_detector": "forest"
+    },
+    {
+      "dataset": "t_drive_cells",
+      "cover_model": "transformer",
+      "attempted_bits_per_transition": 0.0142,
+      "max_auc": 0.5018,
+      "max_auc_detector": "linear"
+    },
+    {
+      "dataset": "tgbl-wiki",
+      "cover_model": "backoff",
+      "attempted_bits_per_transition": 0.2105,
+      "max_auc": 0.5418,
+      "max_auc_detector": "forest"
+    },
+    {
+      "dataset": "tgbl-wiki",
+      "cover_model": "gru",
+      "attempted_bits_per_transition": 0.0498,
+      "max_auc": 0.5057,
+      "max_auc_detector": "linear"
+    },
+    {
+      "dataset": "tgbl-wiki",
+      "cover_model": "temporal_graph_encoder",
+      "attempted_bits_per_transition": 0.0,
+      "max_auc": 0.5,
+      "max_auc_detector": "forest"
+    },
+    {
+      "dataset": "tgbl-wiki",
+      "cover_model": "transformer",
+      "attempted_bits_per_transition": 0.0328,
+      "max_auc": 0.5051,
+      "max_auc_detector": "forest"
+    }
+  ]
+}

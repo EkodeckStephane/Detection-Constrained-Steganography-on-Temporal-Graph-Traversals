@@ -1,0 +1,331 @@
+{
+  "campaign": "phase12_oracle_leakage_audit",
+  "source_records": "results/tables/phase9_adaptive_steganalysis_records.csv",
+  "datasets": {
+    "tgbl-wiki": {
+      "correlations": {
+        "bits_consumed": {
+          "dataset": "tgbl-wiki",
+          "feature": "bits_consumed",
+          "pearson_with_label": 0.1389354221878299,
+          "spearman_with_label": 0.13893542218782992,
+          "natural_mean": 0.0,
+          "stego_mean": 0.037875,
+          "absolute_mean_gap": 0.037875
+        },
+        "local_total_variation": {
+          "dataset": "tgbl-wiki",
+          "feature": "local_total_variation",
+          "pearson_with_label": 0.13017025014723194,
+          "spearman_with_label": 0.1389271764436939,
+          "natural_mean": 0.0,
+          "stego_mean": 0.008778417165617725,
+          "absolute_mean_gap": 0.008778417165617725
+        },
+        "local_kl_bits": {
+          "dataset": "tgbl-wiki",
+          "feature": "local_kl_bits",
+          "pearson_with_label": 0.12058680734736246,
+          "spearman_with_label": 0.1389271746183009,
+          "natural_mean": 0.0,
+          "stego_mean": 0.01329749425833011,
+          "absolute_mean_gap": 0.01329749425833011
+        }
+      },
+      "detectors": {
+        "gradient_boosting": {
+          "dataset": "tgbl-wiki",
+          "detector": "gradient_boosting",
+          "bounded_auc": 0.52938628125,
+          "oracle_auc": 0.5371577421875,
+          "internal_only_auc": 0.5189375,
+          "oracle_minus_bounded_auc": 0.00777146093750003,
+          "internal_advantage_over_random": 0.01893750000000005
+        },
+        "random_forest": {
+          "dataset": "tgbl-wiki",
+          "detector": "random_forest",
+          "bounded_auc": 0.52951965625,
+          "oracle_auc": 0.5371577421875,
+          "internal_only_auc": 0.5189375,
+          "oracle_minus_bounded_auc": 0.007638085937500039,
+          "internal_advantage_over_random": 0.01893750000000005
+        },
+        "mlp": {
+          "dataset": "tgbl-wiki",
+          "detector": "mlp",
+          "bounded_auc": 0.5290668359374999,
+          "oracle_auc": 0.5371577421875,
+          "internal_only_auc": 0.5189375,
+          "oracle_minus_bounded_auc": 0.008090906250000085,
+          "internal_advantage_over_random": 0.01893750000000005
+        }
+      },
+      "best_bounded_auc": 0.52951965625,
+      "best_oracle_auc": 0.5371577421875,
+      "best_internal_only_auc": 0.5189375,
+      "empirical_oracle_epsilon": 0.007638085937500039,
+      "empirical_internal_epsilon": 0.01893750000000005
+    },
+    "mooc": {
+      "correlations": {
+        "bits_consumed": {
+          "dataset": "mooc",
+          "feature": "bits_consumed",
+          "pearson_with_label": 0.02092107764975043,
+          "spearman_with_label": 0.020921077649750427,
+          "natural_mean": 0.0,
+          "stego_mean": 0.000875,
+          "absolute_mean_gap": 0.000875
+        },
+        "local_total_variation": {
+          "dataset": "mooc",
+          "feature": "local_total_variation",
+          "pearson_with_label": 0.019717031913008814,
+          "spearman_with_label": 0.020921077007360442,
+          "natural_mean": 0.0,
+          "stego_mean": 0.000179503367003367,
+          "absolute_mean_gap": 0.000179503367003367
+        },
+        "local_kl_bits": {
+          "dataset": "mooc",
+          "feature": "local_kl_bits",
+          "pearson_with_label": 0.01877258041042697,
+          "spearman_with_label": 0.02092107699568062,
+          "natural_mean": 0.0,
+          "stego_mean": 0.00029028598521239066,
+          "absolute_mean_gap": 0.00029028598521239066
+        }
+      },
+      "detectors": {
+        "gradient_boosting": {
+          "dataset": "mooc",
+          "detector": "gradient_boosting",
+          "bounded_auc": 0.5008746171874998,
+          "oracle_auc": 0.5008746171875,
+          "internal_only_auc": 0.5004375,
+          "oracle_minus_bounded_auc": 2.220446049250313e-16,
+          "internal_advantage_over_random": 0.00043749999999997957
+        },
+        "random_forest": {
+          "dataset": "mooc",
+          "detector": "random_forest",
+          "bounded_auc": 0.5008746171875,
+          "oracle_auc": 0.5008746171875,
+          "internal_only_auc": 0.5004375,
+          "oracle_minus_bounded_auc": 0.0,
+          "internal_advantage_over_random": 0.00043749999999997957
+        },
+        "mlp": {
+          "dataset": "mooc",
+          "detector": "mlp",
+          "bounded_auc": 0.5006248515625,
+          "oracle_auc": 0.50087034375,
+          "internal_only_auc": 0.5004375,
+          "oracle_minus_bounded_auc": 0.0002454921874999183,
+          "internal_advantage_over_random": 0.00043749999999997957
+        }
+      },
+      "best_bounded_auc": 0.5008746171875,
+      "best_oracle_auc": 0.5008746171875,
+      "best_internal_only_auc": 0.5004375,
+      "empirical_oracle_epsilon": 0.0,
+      "empirical_internal_epsilon": 0.00043749999999997957
+    },
+    "lastfm": {
+      "correlations": {
+        "bits_consumed": {
+          "dataset": "lastfm",
+          "feature": "bits_consumed",
+          "pearson_with_label": 0.0,
+          "spearman_with_label": 0.0,
+          "natural_mean": 0.0,
+          "stego_mean": 0.0,
+          "absolute_mean_gap": 0.0
+        },
+        "local_total_variation": {
+          "dataset": "lastfm",
+          "feature": "local_total_variation",
+          "pearson_with_label": 0.0,
+          "spearman_with_label": 0.0,
+          "natural_mean": 0.0,
+          "stego_mean": 0.0,
+          "absolute_mean_gap": 0.0
+        },
+        "local_kl_bits": {
+          "dataset": "lastfm",
+          "feature": "local_kl_bits",
+          "pearson_with_label": 0.0,
+          "spearman_with_label": 0.0,
+          "natural_mean": 0.0,
+          "stego_mean": 0.0,
+          "absolute_mean_gap": 0.0
+        }
+      },
+      "detectors": {
+        "gradient_boosting": {
+          "dataset": "lastfm",
+          "detector": "gradient_boosting",
+          "bounded_auc": 0.5,
+          "oracle_auc": 0.5,
+          "internal_only_auc": 0.5,
+          "oracle_minus_bounded_auc": 0.0,
+          "internal_advantage_over_random": 0.0
+        },
+        "random_forest": {
+          "dataset": "lastfm",
+          "detector": "random_forest",
+          "bounded_auc": 0.5,
+          "oracle_auc": 0.5,
+          "internal_only_auc": 0.5,
+          "oracle_minus_bounded_auc": 0.0,
+          "internal_advantage_over_random": 0.0
+        },
+        "mlp": {
+          "dataset": "lastfm",
+          "detector": "mlp",
+          "bounded_auc": 0.4999999921875,
+          "oracle_auc": 0.49999999218749996,
+          "internal_only_auc": 0.5,
+          "oracle_minus_bounded_auc": -5.551115123125783e-17,
+          "internal_advantage_over_random": 0.0
+        }
+      },
+      "best_bounded_auc": 0.5,
+      "best_oracle_auc": 0.5,
+      "best_internal_only_auc": 0.5,
+      "empirical_oracle_epsilon": 0.0,
+      "empirical_internal_epsilon": 0.0
+    },
+    "geolife_cells": {
+      "correlations": {
+        "bits_consumed": {
+          "dataset": "geolife_cells",
+          "feature": "bits_consumed",
+          "pearson_with_label": 0.0,
+          "spearman_with_label": 0.0,
+          "natural_mean": 0.0,
+          "stego_mean": 0.0,
+          "absolute_mean_gap": 0.0
+        },
+        "local_total_variation": {
+          "dataset": "geolife_cells",
+          "feature": "local_total_variation",
+          "pearson_with_label": 0.0,
+          "spearman_with_label": 0.0,
+          "natural_mean": 0.0,
+          "stego_mean": 0.0,
+          "absolute_mean_gap": 0.0
+        },
+        "local_kl_bits": {
+          "dataset": "geolife_cells",
+          "feature": "local_kl_bits",
+          "pearson_with_label": 0.0,
+          "spearman_with_label": 0.0,
+          "natural_mean": 0.0,
+          "stego_mean": 0.0,
+          "absolute_mean_gap": 0.0
+        }
+      },
+      "detectors": {
+        "gradient_boosting": {
+          "dataset": "geolife_cells",
+          "detector": "gradient_boosting",
+          "bounded_auc": 0.5,
+          "oracle_auc": 0.5,
+          "internal_only_auc": 0.5,
+          "oracle_minus_bounded_auc": 0.0,
+          "internal_advantage_over_random": 0.0
+        },
+        "random_forest": {
+          "dataset": "geolife_cells",
+          "detector": "random_forest",
+          "bounded_auc": 0.5,
+          "oracle_auc": 0.5,
+          "internal_only_auc": 0.5,
+          "oracle_minus_bounded_auc": 0.0,
+          "internal_advantage_over_random": 0.0
+        },
+        "mlp": {
+          "dataset": "geolife_cells",
+          "detector": "mlp",
+          "bounded_auc": 0.5,
+          "oracle_auc": 0.49999028906250004,
+          "internal_only_auc": 0.5,
+          "oracle_minus_bounded_auc": -9.710937499962657e-06,
+          "internal_advantage_over_random": 0.0
+        }
+      },
+      "best_bounded_auc": 0.5,
+      "best_oracle_auc": 0.5,
+      "best_internal_only_auc": 0.5,
+      "empirical_oracle_epsilon": 0.0,
+      "empirical_internal_epsilon": 0.0
+    },
+    "t_drive_cells": {
+      "correlations": {
+        "bits_consumed": {
+          "dataset": "t_drive_cells",
+          "feature": "bits_consumed",
+          "pearson_with_label": 0.13051950803666776,
+          "spearman_with_label": 0.1305195080366676,
+          "natural_mean": 0.0,
+          "stego_mean": 0.0335,
+          "absolute_mean_gap": 0.0335
+        },
+        "local_total_variation": {
+          "dataset": "t_drive_cells",
+          "feature": "local_total_variation",
+          "pearson_with_label": 0.12268906540076639,
+          "spearman_with_label": 0.13051344657076738,
+          "natural_mean": 0.0,
+          "stego_mean": 0.007996227527200422,
+          "absolute_mean_gap": 0.007996227527200422
+        },
+        "local_kl_bits": {
+          "dataset": "t_drive_cells",
+          "feature": "local_kl_bits",
+          "pearson_with_label": 0.11535310513931929,
+          "spearman_with_label": 0.1305134313247133,
+          "natural_mean": 0.0,
+          "stego_mean": 0.01293481875832431,
+          "absolute_mean_gap": 0.01293481875832431
+        }
+      },
+      "detectors": {
+        "gradient_boosting": {
+          "dataset": "t_drive_cells",
+          "detector": "gradient_boosting",
+          "bounded_auc": 0.5208939062500001,
+          "oracle_auc": 0.532938875,
+          "internal_only_auc": 0.51675,
+          "oracle_minus_bounded_auc": 0.01204496874999994,
+          "internal_advantage_over_random": 0.016750000000000043
+        },
+        "random_forest": {
+          "dataset": "t_drive_cells",
+          "detector": "random_forest",
+          "bounded_auc": 0.5208684921875,
+          "oracle_auc": 0.5329388749999999,
+          "internal_only_auc": 0.51675,
+          "oracle_minus_bounded_auc": 0.012070382812499947,
+          "internal_advantage_over_random": 0.016750000000000043
+        },
+        "mlp": {
+          "dataset": "t_drive_cells",
+          "detector": "mlp",
+          "bounded_auc": 0.521388984375,
+          "oracle_auc": 0.5329388046875,
+          "internal_only_auc": 0.51675,
+          "oracle_minus_bounded_auc": 0.011549820312499959,
+          "internal_advantage_over_random": 0.016750000000000043
+        }
+      },
+      "best_bounded_auc": 0.521388984375,
+      "best_oracle_auc": 0.532938875,
+      "best_internal_only_auc": 0.51675,
+      "empirical_oracle_epsilon": 0.011549890625000003,
+      "empirical_internal_epsilon": 0.016750000000000043
+    }
+  }
+}

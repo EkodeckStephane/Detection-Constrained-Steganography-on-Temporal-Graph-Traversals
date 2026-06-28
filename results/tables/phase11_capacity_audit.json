@@ -1,0 +1,80 @@
+{
+  "campaign": "phase11_capacity_audit",
+  "source_campaign": "phase7_external_steganalysis",
+  "model": {
+    "name": "temporal_source_previous_destination_backoff",
+    "prior_strength": 8.0,
+    "top_k": 32
+  },
+  "codec": {
+    "max_bits_per_transition": 1,
+    "codec_backend": "range",
+    "max_local_total_variation": 0.35,
+    "max_local_kl_bits": 0.6,
+    "min_entropy_bits": 0.5,
+    "cover_when_unsafe": true,
+    "max_encoded_rank_fraction": 0.5
+  },
+  "datasets": {
+    "tgbl-wiki": {
+      "test_transitions": 10000,
+      "mean_candidate_entropy_bits": 3.7475734424980334,
+      "mean_safe_entropy_bits_per_transition": 0.1097283025697054,
+      "mean_safe_entropy_bits_when_feasible": 1.4213510695557694,
+      "mean_codec_bits_per_transition": 0.0515,
+      "state_feasible_rate": 0.1267,
+      "selected_allowed_rate": 0.8991,
+      "embed_rate": 0.0515,
+      "mean_allowed_candidate_count": 1.1796,
+      "codec_gap_bits_per_transition": 0.07735793542012234
+    },
+    "mooc": {
+      "test_transitions": 10000,
+      "mean_candidate_entropy_bits": 3.845558840992667,
+      "mean_safe_entropy_bits_per_transition": 0.00029062940545800987,
+      "mean_safe_entropy_bits_when_feasible": 0.968764684860033,
+      "mean_codec_bits_per_transition": 0.0007,
+      "state_feasible_rate": 0.0018,
+      "selected_allowed_rate": 0.9983,
+      "embed_rate": 0.0007,
+      "mean_allowed_candidate_count": 0.0021,
+      "codec_gap_bits_per_transition": 0.0
+    },
+    "lastfm": {
+      "test_transitions": 10000,
+      "mean_candidate_entropy_bits": 4.896223390453198,
+      "mean_safe_entropy_bits_per_transition": 0.001483286167972302,
+      "mean_safe_entropy_bits_when_feasible": 1.6480957421914466,
+      "mean_codec_bits_per_transition": 0.0,
+      "state_feasible_rate": 0.001,
+      "selected_allowed_rate": 0.9996,
+      "embed_rate": 0.0,
+      "mean_allowed_candidate_count": 0.0145,
+      "codec_gap_bits_per_transition": 0.001483286167972302
+    },
+    "geolife_cells": {
+      "test_transitions": 10000,
+      "mean_candidate_entropy_bits": 1.2251070513347537,
+      "mean_safe_entropy_bits_per_transition": 0.003322240358678118,
+      "mean_safe_entropy_bits_when_feasible": 1.5101092539445993,
+      "mean_codec_bits_per_transition": 0.0008,
+      "state_feasible_rate": 0.0033,
+      "selected_allowed_rate": 0.9997,
+      "embed_rate": 0.0008,
+      "mean_allowed_candidate_count": 0.0363,
+      "codec_gap_bits_per_transition": 0.003322240358678118
+    },
+    "t_drive_cells": {
+      "test_transitions": 10000,
+      "mean_candidate_entropy_bits": 3.7644225014853423,
+      "mean_safe_entropy_bits_per_transition": 0.08713167055929646,
+      "mean_safe_entropy_bits_when_feasible": 0.9912590507314729,
+      "mean_codec_bits_per_transition": 0.0322,
+      "state_feasible_rate": 0.1273,
+      "selected_allowed_rate": 0.9678,
+      "embed_rate": 0.0322,
+      "mean_allowed_candidate_count": 0.4747,
+      "codec_gap_bits_per_transition": 0.07389470246172271
+    }
+  }
+}

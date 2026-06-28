@@ -1,0 +1,340 @@
+{
+  "campaign": "phase9_adaptive_steganalysis",
+  "date": "2026-06-26",
+  "detectors": {
+    "tgbl-wiki": {
+      "temporal_graph_eve": {
+        "auc": 0.5010427343749999,
+        "balanced_accuracy": 0.5000625000000001,
+        "eer": 0.500875
+      },
+      "sequence_transformer_eve": {
+        "auc": 0.5135636484375,
+        "balanced_accuracy": 0.5069375,
+        "eer": 0.49250000000000005
+      },
+      "bounded_white_box_gradient_boosting": {
+        "auc": 0.5296305,
+        "auc_ci_low": 0.5212773302135756,
+        "auc_ci_high": 0.5368318674074298,
+        "balanced_accuracy": 0.5150625,
+        "eer": 0.4849375,
+        "feature_importance": {
+          "action_probability": 0.010252655714895934,
+          "surprise_bits": 0.010231264311318083,
+          "rank_fraction": 0.3849920807221283,
+          "is_top_action": 0.0016107572607384133,
+          "entropy_bits": 0.007732371836792932,
+          "top_probability": 0.0034331993891914964,
+          "candidate_count": 0.0006258995077547354,
+          "unseen_context": 7.762246794638636e-05,
+          "unseen_destination": 2.8194627586398677e-05,
+          "same_as_previous": 0.12356553506238914,
+          "self_loop": 0.0,
+          "log_inter_event_gap": 0.05521824690186881,
+          "encoder_capacity_bits": 9.64286502786336e-05,
+          "encoder_tv_bound": 0.010717841145130257,
+          "encoder_kl_bound": 0.012665322084631411,
+          "embedding_feasible": 0.37875258031734893
+        }
+      },
+      "oracle_leakage_gradient_boosting": {
+        "auc": 0.5371577421875,
+        "auc_ci_low": 0.5343260332261233,
+        "auc_ci_high": 0.5398666898074296,
+        "balanced_accuracy": 0.5189375,
+        "eer": 0.4810625,
+        "feature_importance": {
+          "action_probability": 5.427309987814738e-13,
+          "surprise_bits": 5.242806313687439e-13,
+          "rank_fraction": 1.2344020747446507e-13,
+          "is_top_action": 0.0,
+          "entropy_bits": 3.417405696769998e-13,
+          "top_probability": 2.1609729276074425e-13,
+          "candidate_count": 0.0,
+          "unseen_context": 0.0,
+          "unseen_destination": 0.0,
+          "same_as_previous": 1.4583426080287499e-16,
+          "self_loop": 0.0,
+          "log_inter_event_gap": 1.4568189823553088e-12,
+          "encoder_capacity_bits": 0.0,
+          "encoder_tv_bound": 6.144910457173885e-14,
+          "encoder_kl_bound": 2.104049355739274e-13,
+          "embedding_feasible": 0.4907702100555212,
+          "bits_consumed": 0.5092297899408783,
+          "local_total_variation": 5.335526322592204e-14,
+          "local_kl_bits": 6.997570221337984e-14
+        }
+      }
+    },
+    "mooc": {
+      "temporal_graph_eve": {
+        "auc": 0.5001866484374999,
+        "balanced_accuracy": 0.5001875,
+        "eer": 0.499875
+      },
+      "sequence_transformer_eve": {
+        "auc": 0.4998985156250001,
+        "balanced_accuracy": 0.4999375,
+        "eer": 0.5000625
+      },
+      "bounded_white_box_gradient_boosting": {
+        "auc": 0.5008746171874998,
+        "auc_ci_low": 0.5004395026103828,
+        "auc_ci_high": 0.5014405182851389,
+        "balanced_accuracy": 0.5004375,
+        "eer": 0.4995625,
+        "feature_importance": {
+          "action_probability": 0.2700297617730604,
+          "surprise_bits": 0.5381744770043609,
+          "rank_fraction": 0.07758149336841519,
+          "is_top_action": 0.0,
+          "entropy_bits": 2.382190651551731e-13,
+          "top_probability": 1.0278337229335414e-14,
+          "candidate_count": 3.484875047967784e-13,
+          "unseen_context": 0.0,
+          "unseen_destination": 2.3603291770646626e-17,
+          "same_as_previous": 0.0,
+          "self_loop": 0.0,
+          "log_inter_event_gap": 3.410755598099089e-13,
+          "encoder_capacity_bits": -3.387969312368918e-15,
+          "encoder_tv_bound": 3.713193377364809e-13,
+          "encoder_kl_bound": 1.4040212160501472e-13,
+          "embedding_feasible": 0.11421426785271711
+        }
+      },
+      "oracle_leakage_gradient_boosting": {
+        "auc": 0.5008746171875,
+        "auc_ci_low": 0.5004998155673273,
+        "auc_ci_high": 0.5014975782532284,
+        "balanced_accuracy": 0.5004375,
+        "eer": 0.4995625,
+        "feature_importance": {
+          "action_probability": 6.947122611256211e-14,
+          "surprise_bits": 7.923405604961028e-13,
+          "rank_fraction": 1.1309550387789349e-13,
+          "is_top_action": 0.0,
+          "entropy_bits": 5.559145763700944e-13,
+          "top_probability": 1.5942463526516086e-13,
+          "candidate_count": 2.519372164223034e-13,
+          "unseen_context": 0.0,
+          "unseen_destination": 2.671821977364292e-13,
+          "same_as_previous": 0.0,
+          "self_loop": 0.0,
+          "log_inter_event_gap": 6.586150519123224e-14,
+          "encoder_capacity_bits": 0.0,
+          "encoder_tv_bound": 3.648916107362444e-13,
+          "encoder_kl_bound": 4.4529920522755203e-13,
+          "embedding_feasible": 0.49978115425332253,
+          "bits_consumed": 0.06354404143736006,
+          "local_total_variation": 0.054879731377477294,
+          "local_kl_bits": 0.3817950729287547
+        }
+      }
+    },
+    "lastfm": {
+      "temporal_graph_eve": {
+        "auc": 0.4999999921875001,
+        "balanced_accuracy": 0.5,
+        "eer": 0.5
+      },
+      "sequence_transformer_eve": {
+        "auc": 0.49999999999999994,
+        "balanced_accuracy": 0.5,
+        "eer": 0.5
+      },
+      "bounded_white_box_gradient_boosting": {
+        "auc": 0.5,
+        "auc_ci_low": 0.5,
+        "auc_ci_high": 0.5,
+        "balanced_accuracy": 0.5,
+        "eer": 0.5,
+        "feature_importance": {
+          "action_probability": 0.16221886995219595,
+          "surprise_bits": 0.1902277355454202,
+          "rank_fraction": 2.0015029206212802e-14,
+          "is_top_action": 0.0,
+          "entropy_bits": 1.8003815447098427e-13,
+          "top_probability": 1.0939174957852129e-13,
+          "candidate_count": 0.0,
+          "unseen_context": 3.097952892349527e-14,
+          "unseen_destination": 0.0,
+          "same_as_previous": 0.0,
+          "self_loop": 0.0,
+          "log_inter_event_gap": 1.2422147503682098e-12,
+          "encoder_capacity_bits": 0.0,
+          "encoder_tv_bound": 7.579214559311555e-16,
+          "encoder_kl_bound": 0.0,
+          "embedding_feasible": 0.6475533945008005
+        }
+      },
+      "oracle_leakage_gradient_boosting": {
+        "auc": 0.5,
+        "auc_ci_low": 0.5,
+        "auc_ci_high": 0.5,
+        "balanced_accuracy": 0.5,
+        "eer": 0.5,
+        "feature_importance": {
+          "action_probability": 8.305171435902854e-13,
+          "surprise_bits": 3.111817920856767e-13,
+          "rank_fraction": 1.7908453627340596e-13,
+          "is_top_action": 4.329800782169875e-13,
+          "entropy_bits": 1.4052095237880325e-13,
+          "top_probability": 5.223560151752688e-13,
+          "candidate_count": 5.771974415170737e-14,
+          "unseen_context": 3.424030154868734e-17,
+          "unseen_destination": 0.0,
+          "same_as_previous": 0.0,
+          "self_loop": 0.0,
+          "log_inter_event_gap": 3.969066468619695e-12,
+          "encoder_capacity_bits": 0.0,
+          "encoder_tv_bound": 1.1568571207495229e-13,
+          "encoder_kl_bound": 7.239224120350802e-14,
+          "embedding_feasible": 0.49940554408025295,
+          "bits_consumed": 0.06359175613081824,
+          "local_total_variation": 0.054920940111648366,
+          "local_kl_bits": 0.3820817596706488
+        }
+      }
+    },
+    "geolife_cells": {
+      "temporal_graph_eve": {
+        "auc": 0.5,
+        "balanced_accuracy": 0.5,
+        "eer": 0.5
+      },
+      "sequence_transformer_eve": {
+        "auc": 0.49999999999999994,
+        "balanced_accuracy": 0.5,
+        "eer": 0.5
+      },
+      "bounded_white_box_gradient_boosting": {
+        "auc": 0.5,
+        "auc_ci_low": 0.5,
+        "auc_ci_high": 0.5,
+        "balanced_accuracy": 0.5,
+        "eer": 0.5,
+        "feature_importance": {
+          "action_probability": NaN,
+          "surprise_bits": NaN,
+          "rank_fraction": NaN,
+          "is_top_action": NaN,
+          "entropy_bits": NaN,
+          "top_probability": NaN,
+          "candidate_count": NaN,
+          "unseen_context": NaN,
+          "unseen_destination": NaN,
+          "same_as_previous": NaN,
+          "self_loop": NaN,
+          "log_inter_event_gap": NaN,
+          "encoder_capacity_bits": NaN,
+          "encoder_tv_bound": NaN,
+          "encoder_kl_bound": NaN,
+          "embedding_feasible": NaN
+        }
+      },
+      "oracle_leakage_gradient_boosting": {
+        "auc": 0.5,
+        "auc_ci_low": 0.5,
+        "auc_ci_high": 0.5,
+        "balanced_accuracy": 0.5,
+        "eer": 0.5,
+        "feature_importance": {
+          "action_probability": NaN,
+          "surprise_bits": NaN,
+          "rank_fraction": NaN,
+          "is_top_action": NaN,
+          "entropy_bits": NaN,
+          "top_probability": NaN,
+          "candidate_count": NaN,
+          "unseen_context": NaN,
+          "unseen_destination": NaN,
+          "same_as_previous": NaN,
+          "self_loop": NaN,
+          "log_inter_event_gap": NaN,
+          "encoder_capacity_bits": NaN,
+          "encoder_tv_bound": NaN,
+          "encoder_kl_bound": NaN,
+          "embedding_feasible": NaN,
+          "bits_consumed": NaN,
+          "local_total_variation": NaN,
+          "local_kl_bits": NaN
+        }
+      }
+    },
+    "t_drive_cells": {
+      "temporal_graph_eve": {
+        "auc": 0.5003308359374999,
+        "balanced_accuracy": 0.4999375,
+        "eer": 0.4995625
+      },
+      "sequence_transformer_eve": {
+        "auc": 0.50016834375,
+        "balanced_accuracy": 0.5015000000000001,
+        "eer": 0.5015
+      },
+      "bounded_white_box_gradient_boosting": {
+        "auc": 0.520656234375,
+        "auc_ci_low": 0.5127401263045506,
+        "auc_ci_high": 0.5288222812792426,
+        "balanced_accuracy": 0.5104375,
+        "eer": 0.4895625,
+        "feature_importance": {
+          "action_probability": 0.015621264762950258,
+          "surprise_bits": 0.011159766591624008,
+          "rank_fraction": 0.4792391274434446,
+          "is_top_action": 0.0010503654398979507,
+          "entropy_bits": 0.012365974235270749,
+          "top_probability": 0.012632587401930446,
+          "candidate_count": 0.007495129936743166,
+          "unseen_context": 0.0030198130900999033,
+          "unseen_destination": 0.0,
+          "same_as_previous": 0.0020427921438686786,
+          "self_loop": 0.18945981907214574,
+          "log_inter_event_gap": 0.028033059961084652,
+          "encoder_capacity_bits": 2.945353305423383e-06,
+          "encoder_tv_bound": 0.022864245541358463,
+          "encoder_kl_bound": 0.008568551240937562,
+          "embedding_feasible": 0.2064445577853385
+        }
+      },
+      "oracle_leakage_gradient_boosting": {
+        "auc": 0.532938875,
+        "auc_ci_low": 0.5302727581667596,
+        "auc_ci_high": 0.5352618810192843,
+        "balanced_accuracy": 0.51675,
+        "eer": 0.48325,
+        "feature_importance": {
+          "action_probability": 1.996624950288531e-13,
+          "surprise_bits": 4.3089630178258e-13,
+          "rank_fraction": 1.3636698918915848e-13,
+          "is_top_action": 0.0,
+          "entropy_bits": 4.1535994745008695e-13,
+          "top_probability": 4.269146594563772e-13,
+          "candidate_count": 1.2104250463310787e-13,
+          "unseen_context": 0.0,
+          "unseen_destination": 0.0,
+          "same_as_previous": 0.0,
+          "self_loop": 0.0,
+          "log_inter_event_gap": 3.1082008741972216e-13,
+          "encoder_capacity_bits": 0.0,
+          "encoder_tv_bound": 1.1633064625710147e-13,
+          "encoder_kl_bound": 5.212476614792768e-13,
+          "embedding_feasible": 0.49254678084196407,
+          "bits_consumed": 0.507453219154641,
+          "local_total_variation": 5.938712420040654e-14,
+          "local_kl_bits": 6.570051047417265e-13
+        }
+      }
+    }
+  },
+  "training": {
+    "context_length": 8,
+    "embedding_dim": 24,
+    "hidden_dim": 48,
+    "epochs": 2,
+    "batch_size": 256,
+    "learning_rate": 0.003,
+    "seed": 20260626
+  }
+}

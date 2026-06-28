@@ -1,0 +1,6 @@
+dataset,n_edges,ada_max_payload_bpe,ada_added_edges_at_max,ada_message_bytes_at_max,max_auc_detector,proposition_max_auc,proposition_bits_per_transition
+geolife_cells,118,1.3617,70,32.0,linear,0.5002,0.0023
+lastfm,14042,0.0182,0,32.0,linear,0.5001,0.0006
+mooc,17083,0.015,0,32.0,forest,0.5011,0.0012
+t_drive_cells,6704,0.0382,0,32.0,forest,0.5362,0.0994
+tgbl-wiki,5316,0.0482,0,32.0,forest,0.5756,0.0993

@@ -1,0 +1,136 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage[a4paper,margin=1.8cm]{geometry}
+\usepackage{booktabs,array,float,hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+\emergencystretch=1em
+
+\title{Pipeline causal des données réelles\\Phase 3/10}
+\author{Stéganographie adaptative par parcours de graphe}
+\date{13 juin 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Cette phase construit le socle de données réelles de l'étude. Cinq datasets
+sont acquis, vérifiés par checksum et convertis en Parquet : GeoLife, T-Drive,
+tgbl-wiki, MOOC et LastFM. Deux schémas canoniques séparent trajectoires et
+interactions temporelles. Un validateur indépendant confirme l'ordre causal
+des splits et l'absence de séquence commune entre entraînement, validation et
+test. Les statistiques révèlent des différences fortes d'entropie
+conditionnelle entre domaines, ce qui renforce la nécessité d'un encodage
+adaptatif avec abstention.
+\end{abstract}
+
+\section{Panel réel}
+
+\begin{table}[H]
+\centering
+\caption{Datasets effectivement traités.}
+\begin{tabular}{lllr}
+\toprule
+Dataset & Niveau & Domaine & Taille utile\\
+\midrule
+GeoLife 1.3 & A & mobilité personnelle & 24 867 361 points\\
+T-Drive & A & taxi urbain & 10 055 095 points\\
+tgbl-wiki-v2 & B & édition collaborative & 157 474 événements\\
+MOOC/JODIE & B & apprentissage en ligne & 411 749 événements\\
+LastFM/JODIE & B & écoute musicale & 1 293 103 événements\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Le niveau A contient des séquences observées et porte les conclusions
+principales de naturalité. Le niveau B sert à l'apprentissage temporel, au
+passage à l'échelle et au transfert; il ne permet pas d'affirmer qu'un parcours
+reconstruit est un comportement humain naturel.
+
+\section{Schémas et découpage}
+
+Le schéma d'interaction contient les identifiants de l'événement, de la source,
+de la destination et de la séquence, puis le timestamp, le label et le split.
+Le schéma de trajectoire contient les identifiants du point, de la séquence et
+de l'entité, puis le timestamp, les coordonnées et le split. Les utilisateurs
+et items reçoivent des préfixes distincts.
+
+Les flux TGB/JODIE suivent un découpage 70/15/15 par timestamp, en conservant
+ensemble les égalités. GeoLife est partagé par trajectoire complète. Deux
+trajectoires traversant une frontière, soit 9 616 points, sont mises en
+quarantaine. T-Drive est segmenté aux changements de jour et après 20 minutes
+d'interruption. Ses frontières sont placées à minuit : aucune session ne
+traverse un split.
+
+Le validateur relit les Parquet, recalcule les checksums, compare les ensembles
+d'identifiants et impose
+\[
+ \max t_{\rm train}<\min t_{\rm val}
+ \leq\max t_{\rm val}<\min t_{\rm test}.
+\]
+Cette propriété est vérifiée pour GeoLife et T-Drive.
+
+\section{Structure temporelle}
+
+\begin{table}[H]
+\centering
+\caption{Statistiques des flux bipartites.}
+\begin{tabular}{lrrrr}
+\toprule
+Dataset & Événements & Noeuds & Arêtes répétées & $H(D\mid S)$\\
+\midrule
+tgbl-wiki & 157 474 & 9 227 & 88,4\% & 1,197\\
+MOOC & 411 749 & 7 144 & 56,7\% & 4,880\\
+LastFM & 1 293 103 & 1 980 & 88,0\% & 7,034\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Pour tgbl-wiki, \(2^{H(D\mid S)}=2,293\) continuations effectives en moyenne.
+LastFM offre une incertitude conditionnelle bien supérieure. L'avis est
+tranché : un débit fixe ou un seuil d'entropie unique ne sera pas défendable
+sur ce panel. Le contrôleur devra adapter localement sa décision et accepter
+l'abstention dans les contextes concentrés.
+
+GeoLife contient 18 668 trajectoires retenues, avec une médiane de 506 points,
+une durée médiane de 2 527,5 secondes et un intervalle médian de deux secondes.
+T-Drive produit 211 404 sessions, avec 20 points, 5 408 secondes et 300
+secondes respectivement. Ces dynamiques sont suffisamment différentes pour
+tester la robustesse de la modélisation temporelle.
+
+\section{Qualité et provenance}
+
+GeoLife ne contient qu'un point invalide et aucune inversion temporelle. Son
+archive comporte 18 670 fichiers PLT alors que le guide en annonce 17 621;
+l'écart est documenté. T-Drive contient 98 lignes invalides et 33 158
+coordonnées hors de l'enveloppe large Chine
+\(\mathrm{lat}\in[18,54]\), \(\mathrm{lon}\in[73,135]\), toutes exclues.
+
+L'échantillon T-Drive officiel disponible présente 8 911 fichiers et 10,09
+millions de points bruts, contre 10 357 taxis et environ 15 millions de points
+dans l'article. Il ne sera donc pas décrit comme la collection complète.
+
+\section{Licences et limites}
+
+GeoLife autorise uniquement l'usage non commercial. La page T-Drive ne donne
+pas de termes explicites de redistribution. Les conditions SNAP de MOOC et
+LastFM doivent être validées avant publication du dépôt. Porto Taxi reste
+conditionné par l'authentification Kaggle.
+
+La discrétisation spatiale est volontairement différée. Les cellules, le
+vocabulaire et les normaliseurs devront être ajustés uniquement sur
+l'entraînement; les choisir sur l'ensemble des points introduirait une fuite.
+
+\section{Décision de passage}
+
+La phase 3 est techniquement validée : cinq datasets réels, quatre familles
+comportementales, 16 tests réussis, fiches de provenance, checksums, sorties
+Parquet et validation causale indépendante. La phase 4 peut commencer avec
+tgbl-wiki pour le développement, GeoLife et T-Drive pour les parcours
+observés, puis MOOC et LastFM pour le transfert.
+
+Le paquet public Q1 restera conditionné à une décision de redistribution pour
+T-Drive et SNAP, ou à leur remplacement par des sources aux termes explicites.
+
+\end{document}

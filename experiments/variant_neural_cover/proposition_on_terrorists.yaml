@@ -1,0 +1,23 @@
+campaign: proposition_on_terrorists
+date: 2026-06-26
+dataset_path: literature/external/lee_hmg_snapshot/data/test/terrorists-911/edges.csv
+n_walks: 100
+walk_length: 50
+walk_kind: uniform
+seed: 20260626
+model:
+  name: temporal_source_previous_destination_backoff
+  prior_strength: 8.0
+  top_k: 32
+codec:
+  max_bits_per_transition: 1
+  codec_backend: range
+  max_local_total_variation: 0.35
+  max_local_kl_bits: 0.60
+  min_entropy_bits: 0.5
+  cover_when_unsafe: true
+  max_encoded_rank_fraction: 0.5
+detectors:
+  - linear
+  - forest
+  - mlp
