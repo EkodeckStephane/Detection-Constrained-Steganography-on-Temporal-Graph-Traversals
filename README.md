@@ -21,14 +21,6 @@ The public repository is intended to contain the executable artifact:
 - `docs/`: reproducibility notes, methodological notes, and revision logs.
 - `check_labels_refs.py`, `pytest.ini`, `.gitignore`, `.gitattributes`.
 
-The manuscript source directories are intentionally excluded from the public
-code artifact:
-
-- `article/` is not included in the GitHub export.
-- `IEEE_TSP/` is a submission-format working directory and is not included in
-  the GitHub export by default.
-- `DCS_Projects/` is private local material and is never included.
-
 ## Scientific Problem
 
 Many security-relevant systems emit ordered relational traces: edits in a wiki,
