@@ -12,6 +12,7 @@ import pandas as pd
 from stego.coding import Candidate
 
 UNKNOWN_DESTINATION = "__unknown_destination__"
+HISTORY_MODES = frozenset({"actor_history", "walk_source"})
 
 
 @dataclass(frozen=True)
@@ -40,23 +41,33 @@ class TemporalMetrics:
 
 
 class TemporalBackoffModel:
-    """Causal next-destination model with source/history backoff.
+    """Causal next-destination model with domain-specific history semantics.
 
-    When a ``sequence_id`` column is present, previous-destination state is
-    isolated by sequence. This prevents events from independent trajectories
-    that happen to share the same current source/node from contaminating one
-    another's causal history. When ``sequence_id`` is absent or missing, the
-    source identifier is used as the history key, which is appropriate for
-    actor-centric streams such as user-to-item interactions.
+    ``actor_history`` conditions an actor/source on its previous emitted
+    destination/action. ``walk_source`` treats the current source node as the
+    complete first-order walk state, avoiding a redundant previous-destination
+    variable for contiguous node-to-node trajectories.
+
+    When ``sequence_id`` is available, actor-history state is isolated by
+    sequence. Otherwise it falls back to the source identifier.
     """
 
-    def __init__(self, *, prior_strength: float = 8.0, top_k: int = 32) -> None:
+    def __init__(
+        self,
+        *,
+        prior_strength: float = 8.0,
+        top_k: int = 32,
+        history_mode: str = "actor_history",
+    ) -> None:
         if prior_strength <= 0:
             raise ValueError("prior_strength must be positive")
         if top_k < 2:
             raise ValueError("top_k must be at least two")
+        if history_mode not in HISTORY_MODES:
+            raise ValueError(f"history_mode must be one of {sorted(HISTORY_MODES)}")
         self.prior_strength = float(prior_strength)
         self.top_k = int(top_k)
+        self.history_mode = history_mode
         self._context_counts: dict[tuple[Hashable, Hashable | None], Counter[Hashable]] = {}
         self._source_counts: dict[Hashable, Counter[Hashable]] = {}
         self._global_counts: Counter[Hashable] = Counter()
@@ -67,7 +78,8 @@ class TemporalBackoffModel:
         return frozenset(self._global_counts)
 
     def has_context(self, source: Hashable, previous_destination: Hashable | None) -> bool:
-        return (source, previous_destination) in self._context_counts
+        normalized_previous = self._normalized_previous(previous_destination)
+        return (source, normalized_previous) in self._context_counts
 
     def fit(self, frame: pd.DataFrame) -> TemporalBackoffModel:
         _require_columns(frame, ("source", "destination", "timestamp"))
@@ -88,7 +100,11 @@ class TemporalBackoffModel:
             source, destination = row[0], row[1]
             sequence_id = row[2] if has_sequence else None
             history_key = temporal_history_key(source, sequence_id)
-            previous = previous_by_history.get(history_key)
+            previous = (
+                previous_by_history.get(history_key)
+                if self.history_mode == "actor_history"
+                else None
+            )
             context = (source, previous)
             context_counts[context][destination] += 1
             source_counts[source][destination] += 1
@@ -107,6 +123,7 @@ class TemporalBackoffModel:
         previous_destination: Hashable | None,
     ) -> list[Candidate]:
         self._ensure_fitted()
+        previous_destination = self._normalized_previous(previous_destination)
         context = (source, previous_destination)
         if context in self._context_counts:
             counts = self._context_counts[context]
@@ -156,7 +173,11 @@ class TemporalBackoffModel:
             source, destination = row[0], row[1]
             sequence_id = row[2] if has_sequence else None
             history_key = temporal_history_key(source, sequence_id)
-            previous = previous_by_history.get(history_key)
+            previous = (
+                previous_by_history.get(history_key)
+                if self.history_mode == "actor_history"
+                else None
+            )
             candidates = self.candidate_distribution(source, previous)
             probabilities = {candidate.action: candidate.probability for candidate in candidates}
             top = candidates[0]
@@ -170,7 +191,7 @@ class TemporalBackoffModel:
                 top_probability=top.probability,
                 entropy_bits=_entropy([candidate.probability for candidate in candidates]),
                 candidate_count=len(candidates),
-                unseen_context=(source, previous) not in self._context_counts,
+                unseen_context=(source, self._normalized_previous(previous)) not in self._context_counts,
                 unseen_destination=destination not in self._global_counts,
             )
             previous_by_history[history_key] = destination
@@ -193,6 +214,9 @@ class TemporalBackoffModel:
                 np.mean([prediction.unseen_destination for prediction in predictions])
             ),
         )
+
+    def _normalized_previous(self, previous_destination: Hashable | None) -> Hashable | None:
+        return previous_destination if self.history_mode == "actor_history" else None
 
     def _ensure_fitted(self) -> None:
         if not self._global_counts:
@@ -218,11 +242,14 @@ def evaluate_temporal_splits(
     *,
     prior_strength: float = 8.0,
     top_k: int = 32,
+    history_mode: str = "actor_history",
 ) -> dict[str, TemporalMetrics]:
     _require_columns(frame, ("source", "destination", "timestamp", "split"))
-    model = TemporalBackoffModel(prior_strength=prior_strength, top_k=top_k).fit(
-        frame.loc[frame["split"] == "train"]
-    )
+    model = TemporalBackoffModel(
+        prior_strength=prior_strength,
+        top_k=top_k,
+        history_mode=history_mode,
+    ).fit(frame.loc[frame["split"] == "train"])
     return {
         split: model.evaluate(frame.loc[frame["split"] == split])
         for split in ("train", "validation", "test")
