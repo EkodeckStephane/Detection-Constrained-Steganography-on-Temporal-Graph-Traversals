@@ -7,6 +7,7 @@ from pathlib import Path
 import bitstring
 import networkx as nx
 import pandas as pd
+import pytest
 
 from baselines.graph_stego import bind_encode
 
@@ -14,6 +15,12 @@ from baselines.graph_stego import bind_encode
 def test_bind_matches_the_official_hmg_edge_order() -> None:
     root = Path(__file__).resolve().parents[2]
     snapshot = root / "literature/external/lee_hmg_snapshot"
+    if not snapshot.exists():
+        pytest.skip(
+            "official HMG snapshot is an optional external oracle and is not "
+            "redistributed with the repository"
+        )
+
     sys.path.insert(0, str(snapshot))
     try:
         from hmg.algorithms.realnet.bind import BIND
