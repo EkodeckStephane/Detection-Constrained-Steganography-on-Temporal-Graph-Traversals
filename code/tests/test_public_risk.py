@@ -4,7 +4,11 @@ import numpy as np
 import pytest
 
 from steganalysis.detectors import OrientedDetector
-from steganalysis.public_risk import candidate_public_feature_matrix, public_state_risk_envelope
+from steganalysis.public_risk import (
+    candidate_public_feature_matrix,
+    public_reference_risk,
+    public_state_risk_envelope,
+)
 from stego.coding import Candidate
 
 
@@ -55,7 +59,25 @@ def test_public_risk_depends_on_state_candidates_not_payload_bits() -> None:
     assert first.candidate_count == 3
 
 
-def test_public_risk_takes_worst_admissible_action() -> None:
+def test_primary_reference_risk_uses_deterministic_top_cover_action() -> None:
+    candidates = [Candidate("B", 0.55), Candidate("C", 0.45)]
+
+    result = public_reference_risk(
+        _detectors(),
+        source="A",
+        previous_action="A",
+        candidates=candidates,
+        gap=0.0,
+        context_seen=False,
+        training_destinations={"B", "C"},
+    )
+
+    assert result.action == "B"
+    assert result.risk == pytest.approx(0.55)
+    assert result.candidate_count == 2
+
+
+def test_public_risk_envelope_keeps_worst_admissible_action_for_sensitivity() -> None:
     candidates = [Candidate("B", 0.55), Candidate("C", 0.45)]
 
     result = public_state_risk_envelope(
