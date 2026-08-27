@@ -4,16 +4,30 @@ import json
 from pathlib import Path
 
 
+# Validate only assets that are part of this repository's reproducibility contract.
+# Manuscript/thesis trees and external literature snapshots are intentionally not
+# required here: they are not redistributed as executable project dependencies.
 REQUIRED_PATHS = (
-    "papers/base",
-    "papers/sota",
-    "papers/metadata/library.csv",
+    "README.md",
     "datasets/metadata/manifest.yaml",
-    "code/configs/base.yaml",
-    "docs/protocols/experimental_protocol.md",
-    "docs/scientific_lock/formal_method.md",
-    "article/main.tex",
-    "thesis/main.tex",
+    "experiments/asoc_v2/protocol.yaml",
+    "docs/asoc_v2/SCIENTIFIC_SPEC.md",
+    "docs/scientific_lock/novelty_matrix.md",
+    "code/requirements.txt",
+    "code/src/data/splits.py",
+    "code/src/models/temporal.py",
+    "code/src/models/admissibility.py",
+    "code/src/stego/causal_arithmetic.py",
+    "code/src/controllers/fuzzy.py",
+    "code/src/steganalysis/detectors.py",
+    "code/tests/test_steganalysis_samples.py",
+    "code/tests/test_sealed_selection.py",
+    "code/tests/test_admissibility.py",
+    ".github/workflows/asoc-v2-ci.yml",
+)
+
+OPTIONAL_JSON_PATHS = (
+    "results/tables/phase3_dataset_statistics.json",
 )
 
 
@@ -24,21 +38,32 @@ def main() -> None:
         formatted = "\n".join(f"- {path}" for path in missing)
         raise SystemExit(f"Project validation failed. Missing:\n{formatted}")
 
-    pdfs = sorted((root / "papers").rglob("*.pdf"))
-    invalid_pdfs = [
-        str(path.relative_to(root))
-        for path in pdfs
-        if path.stat().st_size == 0 or path.read_bytes()[:5] != b"%PDF-"
+    invalid_json = []
+    for relative in OPTIONAL_JSON_PATHS:
+        path = root / relative
+        if not path.exists():
+            continue
+        try:
+            with path.open(encoding="utf-8") as handle:
+                json.load(handle)
+        except (OSError, json.JSONDecodeError):
+            invalid_json.append(relative)
+    if invalid_json:
+        formatted = "\n".join(f"- {path}" for path in invalid_json)
+        raise SystemExit(f"Invalid JSON files:\n{formatted}")
+
+    empty_required = [
+        path for path in REQUIRED_PATHS
+        if (root / path).is_file() and (root / path).stat().st_size == 0
     ]
-    if invalid_pdfs:
-        formatted = "\n".join(f"- {path}" for path in invalid_pdfs)
-        raise SystemExit(f"Invalid PDF files:\n{formatted}")
+    if empty_required:
+        formatted = "\n".join(f"- {path}" for path in empty_required)
+        raise SystemExit(f"Required files are empty:\n{formatted}")
 
-    notebook = root / "notebooks/colab/01_environment_and_data.ipynb"
-    with notebook.open(encoding="utf-8") as handle:
-        json.load(handle)
-
-    print(f"Project structure is valid ({len(pdfs)} PDF files checked).")
+    print(
+        "ASOC V2 project structure is valid "
+        f"({len(REQUIRED_PATHS)} required paths checked)."
+    )
 
 
 if __name__ == "__main__":
