@@ -108,3 +108,34 @@ def test_sequence_ids_prevent_cross_trajectory_state_leakage() -> None:
     assert stego.loc[1, "previous_action"] == ""
     assert stego.loc[2, "previous_action"] == stego.loc[0, "action"]
     assert stego.loc[3, "previous_action"] == stego.loc[1, "action"]
+
+
+def test_walk_semantics_propagates_emitted_destination_as_next_source() -> None:
+    frame = pd.DataFrame(
+        {
+            "source": ["cell:A", "cell:A", "cell:B", "cell:B"],
+            "destination": ["a", "a", "a", "a"],
+            "timestamp": [1, 2, 3, 4],
+            "sequence_id": ["trip-1", "trip-2", "trip-1", "trip-2"],
+        }
+    )
+
+    records = make_steganalysis_records(
+        _HistoryAwareStub(),
+        frame,
+        split="validation",
+        config=SampleConfig(
+            max_bits_per_transition=1,
+            seed=11,
+            max_local_total_variation=1.0,
+            max_local_kl_bits=1.0,
+            min_entropy_bits=0.0,
+            transition_semantics="walk",
+        ),
+    )
+    stego = records.loc[records["label"] == 1].reset_index(drop=True)
+
+    assert stego.loc[0, "source"] == "cell:A"
+    assert stego.loc[1, "source"] == "cell:A"
+    assert stego.loc[2, "source"] == stego.loc[0, "action"]
+    assert stego.loc[3, "source"] == stego.loc[1, "action"]
