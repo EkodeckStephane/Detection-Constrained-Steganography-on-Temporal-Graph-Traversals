@@ -1,6 +1,13 @@
 from __future__ import annotations
 
-from controllers.fuzzy import ControllerInputs, FuzzyRateController, fixed_entropy_threshold
+import pytest
+
+from controllers.fuzzy import (
+    ControllerInputs,
+    FuzzyRateController,
+    FuzzyWeights,
+    fixed_entropy_threshold,
+)
 
 
 def test_fuzzy_controller_embeds_when_entropy_is_high_and_risk_is_low() -> None:
@@ -54,6 +61,34 @@ def test_fuzzy_controller_stops_at_dead_end() -> None:
     )
 
     assert decision.mode == "STOP"
+
+
+def test_tunable_opportunity_weight_changes_the_policy() -> None:
+    inputs = ControllerInputs(
+        predictive_entropy=0.95,
+        calibration_uncertainty=0.0,
+        steganalysis_risk=0.0,
+        payload_pressure=1.0,
+        dead_end_risk=0.0,
+        channel_fragility=0.0,
+    )
+    high = FuzzyRateController(
+        max_bits_per_transition=4,
+        weights=FuzzyWeights(opportunity_entropy_weight=1.0),
+    ).decide(inputs)
+    suppressed = FuzzyRateController(
+        max_bits_per_transition=4,
+        weights=FuzzyWeights(opportunity_entropy_weight=0.0),
+    ).decide(inputs)
+
+    assert high.mode == "EMBED"
+    assert suppressed.mode == "COVER"
+    assert high.rate_score > suppressed.rate_score
+
+
+def test_fuzzy_weights_reject_out_of_range_parameter() -> None:
+    with pytest.raises(ValueError):
+        FuzzyWeights(pause_risk_weight=1.01)
 
 
 def test_fixed_threshold_baseline_is_deterministic() -> None:
