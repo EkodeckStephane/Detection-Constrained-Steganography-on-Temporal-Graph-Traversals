@@ -41,6 +41,8 @@ ORACLE_LEAKAGE_COLUMNS = [
     "local_kl_bits",
 ]
 
+TRANSITION_SEMANTICS = frozenset({"actor_action", "walk"})
+
 
 @dataclass(frozen=True)
 class SampleConfig:
@@ -56,6 +58,13 @@ class SampleConfig:
     max_encoded_rank_fraction: float = 1.0
     require_encoded_top_action: bool = False
     require_encoded_self_loop: bool = False
+    transition_semantics: str = "actor_action"
+
+    def __post_init__(self) -> None:
+        if self.transition_semantics not in TRANSITION_SEMANTICS:
+            raise ValueError(
+                f"transition_semantics must be one of {sorted(TRANSITION_SEMANTICS)}"
+            )
 
 
 def make_steganalysis_records(
@@ -67,11 +76,10 @@ def make_steganalysis_records(
 ) -> pd.DataFrame:
     """Generate paired natural/stego records with distinct causal histories.
 
-    The natural path is a counterfactual cover trajectory and is updated with
-    the observed natural action. The stego path is the transmitted trajectory
-    and is updated with the *emitted* stego action. When sequence identifiers
-    are available, both histories are isolated by sequence so independent
-    trajectories cannot contaminate one another through a shared graph node.
+    ``actor_action`` keeps the observed actor/source identity fixed while the
+    previous emitted action changes later context. ``walk`` treats each emitted
+    destination as the next source node of that sequence, which is required for
+    mobility and other node-to-node traversals.
     """
 
     rows = []
@@ -85,16 +93,40 @@ def make_steganalysis_records(
     has_sequence = "sequence_id" in ordered.columns
     if has_sequence:
         columns.append("sequence_id")
+    if config.transition_semantics == "walk" and not has_sequence:
+        raise ValueError("walk transition semantics require sequence_id")
 
     for index, record in enumerate(ordered[columns].itertuples(index=False, name=None)):
-        source, natural_destination, timestamp = record[0], record[1], record[2]
+        observed_source, natural_destination, timestamp = record[0], record[1], record[2]
         sequence_id: Any | None = record[3] if has_sequence else None
-        history_key = temporal_history_key(source, sequence_id)
-        natural_previous = natural_previous_by_history.get(history_key)
-        stego_previous = stego_previous_by_history.get(history_key)
+        history_key = temporal_history_key(observed_source, sequence_id)
+        natural_previous_emitted = natural_previous_by_history.get(history_key)
+        stego_previous_emitted = stego_previous_by_history.get(history_key)
 
-        natural_candidates = model.candidate_distribution(source, natural_previous)
-        stego_candidates = model.candidate_distribution(source, stego_previous)
+        if config.transition_semantics == "walk":
+            natural_source = observed_source
+            stego_source = (
+                stego_previous_emitted
+                if stego_previous_emitted is not None
+                else observed_source
+            )
+            natural_model_previous = None
+            stego_model_previous = None
+        else:
+            natural_source = observed_source
+            stego_source = observed_source
+            natural_model_previous = natural_previous_emitted
+            stego_model_previous = stego_previous_emitted
+
+        natural_candidates = model.candidate_distribution(
+            natural_source, natural_model_previous
+        )
+        stego_candidates = model.candidate_distribution(stego_source, stego_model_previous)
+        if not natural_candidates or not stego_candidates:
+            raise ValueError(
+                "Cover model returned an empty admissible candidate set; "
+                "ASOC V2 policy code must handle this state as a dead end/STOP rather than encode it"
+            )
         bits = rng.integers(0, 2, size=config.max_bits_per_transition).tolist()
 
         natural_encoded = _encode(bits, natural_candidates, config=config)
@@ -102,7 +134,7 @@ def make_steganalysis_records(
             [candidate.probability for candidate in natural_candidates]
         )
         natural_encoded_features = _action_position_features(
-            source=source,
+            source=natural_source,
             action=natural_encoded.action,
             candidates=natural_candidates,
         )
@@ -116,7 +148,7 @@ def make_steganalysis_records(
         encoded = _encode(bits, stego_candidates, config=config)
         stego_entropy = _entropy([candidate.probability for candidate in stego_candidates])
         encoded_features = _action_position_features(
-            source=source,
+            source=stego_source,
             action=encoded.action,
             candidates=stego_candidates,
         )
@@ -150,16 +182,17 @@ def make_steganalysis_records(
             {
                 "split": split,
                 "pair_id": index,
-                "source": str(source),
+                "source": str(natural_source),
+                "observed_source": str(observed_source),
                 "sequence_id": sequence_value,
                 "label": 0,
                 "action": str(natural_destination),
-                "previous_action": "" if natural_previous is None else str(natural_previous),
+                "previous_action": "" if natural_previous_emitted is None else str(natural_previous_emitted),
                 "stego_mode": "NATURAL",
                 **_features(
-                    source=source,
+                    source=natural_source,
                     action=natural_destination,
-                    previous=natural_previous,
+                    previous=natural_model_previous,
                     candidates=natural_candidates,
                     gap=gap,
                     bits_consumed=0,
@@ -170,7 +203,7 @@ def make_steganalysis_records(
                     encoder_kl_bound=natural_encoded.local_kl_bits,
                     embedding_feasible=natural_feasible,
                     training_destination_seen=natural_destination in model.destinations,
-                    context_seen=model.has_context(source, natural_previous),
+                    context_seen=model.has_context(natural_source, natural_model_previous),
                 ),
             }
         )
@@ -178,16 +211,17 @@ def make_steganalysis_records(
             {
                 "split": split,
                 "pair_id": index,
-                "source": str(source),
+                "source": str(stego_source),
+                "observed_source": str(observed_source),
                 "sequence_id": sequence_value,
                 "label": 1,
                 "action": str(stego_action),
-                "previous_action": "" if stego_previous is None else str(stego_previous),
+                "previous_action": "" if stego_previous_emitted is None else str(stego_previous_emitted),
                 "stego_mode": stego_mode,
                 **_features(
-                    source=source,
+                    source=stego_source,
                     action=stego_action,
-                    previous=stego_previous,
+                    previous=stego_model_previous,
                     candidates=stego_candidates,
                     gap=gap,
                     bits_consumed=stego_bits,
@@ -198,7 +232,7 @@ def make_steganalysis_records(
                     encoder_kl_bound=encoded.local_kl_bits,
                     embedding_feasible=can_embed,
                     training_destination_seen=stego_action in model.destinations,
-                    context_seen=model.has_context(source, stego_previous),
+                    context_seen=model.has_context(stego_source, stego_model_previous),
                 ),
             }
         )
@@ -207,7 +241,7 @@ def make_steganalysis_records(
         stego_previous_by_history[history_key] = stego_action
         previous_timestamp_by_history[history_key] = float(timestamp)
         if hasattr(model, "update_timestamp"):
-            model.update_timestamp(source, float(timestamp))
+            model.update_timestamp(stego_source, float(timestamp))
 
     return pd.DataFrame(rows)
 
