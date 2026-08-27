@@ -80,6 +80,15 @@ def make_steganalysis_records(
     previous emitted action changes later context. ``walk`` treats each emitted
     destination as the next source node of that sequence, which is required for
     mobility and other node-to-node traversals.
+
+    For walk semantics, COVER has two cases. Before divergence, the observed
+    natural continuation is retained exactly, even when it lies outside the
+    learned model's top-k support; it is an observed valid transition. After a
+    steganographic divergence, the counterfactual natural destination is no
+    longer necessarily reachable from the emitted source, so COVER follows the
+    highest-probability admissible continuation returned for the actual stego
+    source. Consequently, a zero-payload policy is exactly the natural path and
+    cannot acquire detectability from the simulator itself.
     """
 
     rows = []
@@ -159,17 +168,30 @@ def make_steganalysis_records(
             config=config,
         )
 
-        stego_action = encoded.action if can_embed else natural_destination
-        stego_bits = encoded.bits_consumed if can_embed else 0
-        stego_tv = encoded.local_total_variation if can_embed else 0.0
-        stego_kl = encoded.local_kl_bits if can_embed else 0.0
-        stego_mode = "EMBED" if can_embed else "COVER"
-        if not can_embed and not config.cover_when_unsafe:
+        if can_embed:
+            stego_action = encoded.action
+            stego_bits = encoded.bits_consumed
+            stego_tv = encoded.local_total_variation
+            stego_kl = encoded.local_kl_bits
+            stego_mode = "EMBED"
+        elif not config.cover_when_unsafe:
             stego_action = encoded.action
             stego_bits = encoded.bits_consumed
             stego_tv = encoded.local_total_variation
             stego_kl = encoded.local_kl_bits
             stego_mode = "FORCED_EMBED"
+        else:
+            if config.transition_semantics == "walk" and stego_source != observed_source:
+                # The natural counterfactual may be unreachable after a prior
+                # stego action. Follow an admissible cover continuation instead.
+                stego_action = stego_candidates[0].action
+            else:
+                # Before divergence this preserves the observed stream exactly.
+                stego_action = natural_destination
+            stego_bits = 0
+            stego_tv = 0.0
+            stego_kl = 0.0
+            stego_mode = "COVER"
 
         gap = (
             float(timestamp) - float(previous_timestamp_by_history[history_key])
