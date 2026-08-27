@@ -40,7 +40,15 @@ class TemporalMetrics:
 
 
 class TemporalBackoffModel:
-    """Causal next-destination model with source/history backoff."""
+    """Causal next-destination model with source/history backoff.
+
+    When a ``sequence_id`` column is present, previous-destination state is
+    isolated by sequence. This prevents events from independent trajectories
+    that happen to share the same current source/node from contaminating one
+    another's causal history. When ``sequence_id`` is absent or missing, the
+    source identifier is used as the history key, which is appropriate for
+    actor-centric streams such as user-to-item interactions.
+    """
 
     def __init__(self, *, prior_strength: float = 8.0, top_k: int = 32) -> None:
         if prior_strength <= 0:
@@ -69,13 +77,23 @@ class TemporalBackoffModel:
         context_counts: defaultdict[tuple[Hashable, Hashable | None], Counter[Hashable]] = defaultdict(Counter)
         source_counts: defaultdict[Hashable, Counter[Hashable]] = defaultdict(Counter)
         global_counts: Counter[Hashable] = Counter()
-        previous_by_source: dict[Hashable, Hashable] = {}
-        for source, destination in ordered[["source", "destination"]].itertuples(index=False):
-            context = (source, previous_by_source.get(source))
+        previous_by_history: dict[Hashable, Hashable] = {}
+
+        columns = ["source", "destination"]
+        has_sequence = "sequence_id" in ordered.columns
+        if has_sequence:
+            columns.append("sequence_id")
+
+        for row in ordered[columns].itertuples(index=False, name=None):
+            source, destination = row[0], row[1]
+            sequence_id = row[2] if has_sequence else None
+            history_key = temporal_history_key(source, sequence_id)
+            previous = previous_by_history.get(history_key)
+            context = (source, previous)
             context_counts[context][destination] += 1
             source_counts[source][destination] += 1
             global_counts[destination] += 1
-            previous_by_source[source] = destination
+            previous_by_history[history_key] = destination
 
         self._context_counts = dict(context_counts)
         self._source_counts = dict(source_counts)
@@ -127,11 +145,18 @@ class TemporalBackoffModel:
 
     def iter_predictions(self, frame: pd.DataFrame) -> Iterable[TemporalPrediction]:
         _require_columns(frame, ("source", "destination", "timestamp"))
-        previous_by_source: dict[Hashable, Hashable] = {}
-        for source, destination in frame.sort_values(["timestamp"], kind="stable")[
-            ["source", "destination"]
-        ].itertuples(index=False):
-            previous = previous_by_source.get(source)
+        previous_by_history: dict[Hashable, Hashable] = {}
+        ordered = frame.sort_values(["timestamp"], kind="stable")
+        columns = ["source", "destination"]
+        has_sequence = "sequence_id" in ordered.columns
+        if has_sequence:
+            columns.append("sequence_id")
+
+        for row in ordered[columns].itertuples(index=False, name=None):
+            source, destination = row[0], row[1]
+            sequence_id = row[2] if has_sequence else None
+            history_key = temporal_history_key(source, sequence_id)
+            previous = previous_by_history.get(history_key)
             candidates = self.candidate_distribution(source, previous)
             probabilities = {candidate.action: candidate.probability for candidate in candidates}
             top = candidates[0]
@@ -148,7 +173,7 @@ class TemporalBackoffModel:
                 unseen_context=(source, previous) not in self._context_counts,
                 unseen_destination=destination not in self._global_counts,
             )
-            previous_by_source[source] = destination
+            previous_by_history[history_key] = destination
 
     def evaluate(self, frame: pd.DataFrame) -> TemporalMetrics:
         predictions = list(self.iter_predictions(frame))
@@ -172,6 +197,20 @@ class TemporalBackoffModel:
     def _ensure_fitted(self) -> None:
         if not self._global_counts:
             raise ValueError("The temporal model must be fitted before use")
+
+
+def temporal_history_key(source: Hashable, sequence_id: Any | None) -> Hashable:
+    """Return an isolated state key for the causal history."""
+
+    if sequence_id is None:
+        return ("source", source)
+    try:
+        missing = bool(pd.isna(sequence_id))
+    except (TypeError, ValueError):
+        missing = False
+    if missing:
+        return ("source", source)
+    return ("sequence", sequence_id)
 
 
 def evaluate_temporal_splits(
