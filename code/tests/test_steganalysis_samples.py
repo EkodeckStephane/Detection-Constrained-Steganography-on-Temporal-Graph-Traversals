@@ -32,6 +32,7 @@ def test_make_steganalysis_records_pairs_natural_and_stego() -> None:
     assert set(records["label"]) == {0, 1}
     assert x.shape[1] == len(FEATURE_COLUMNS)
     assert y.tolist().count(1) == 2
+    assert set(records["source"]) == {"u1"}
 
 
 class _HistoryAwareStub:
@@ -75,3 +76,35 @@ def test_stego_history_uses_emitted_action_not_natural_counterfactual() -> None:
     assert stego.loc[0, "action"] == "b"
     assert natural.loc[1, "previous_action"] == "a"
     assert stego.loc[1, "previous_action"] == "b"
+
+
+def test_sequence_ids_prevent_cross_trajectory_state_leakage() -> None:
+    frame = pd.DataFrame(
+        {
+            "source": ["cell:A", "cell:A", "cell:A", "cell:A"],
+            "destination": ["a", "a", "a", "a"],
+            "timestamp": [1, 2, 3, 4],
+            "sequence_id": ["trip-1", "trip-2", "trip-1", "trip-2"],
+        }
+    )
+
+    records = make_steganalysis_records(
+        _HistoryAwareStub(),
+        frame,
+        split="validation",
+        config=SampleConfig(
+            max_bits_per_transition=1,
+            seed=11,
+            max_local_total_variation=1.0,
+            max_local_kl_bits=1.0,
+            min_entropy_bits=0.0,
+        ),
+    )
+    stego = records.loc[records["label"] == 1].reset_index(drop=True)
+
+    assert stego.loc[0, "sequence_id"] == "trip-1"
+    assert stego.loc[1, "sequence_id"] == "trip-2"
+    assert stego.loc[0, "previous_action"] == ""
+    assert stego.loc[1, "previous_action"] == ""
+    assert stego.loc[2, "previous_action"] == stego.loc[0, "action"]
+    assert stego.loc[3, "previous_action"] == stego.loc[1, "action"]
