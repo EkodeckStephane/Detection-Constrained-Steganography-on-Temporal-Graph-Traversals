@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from typing import Literal
 
 Mode = Literal["EMBED", "COVER", "PAUSE", "STOP"]
@@ -28,8 +28,9 @@ class ControlDecision:
 class FuzzyWeights:
     """Tunable Takagi--Sugeno consequence weights for the fuzzy controller.
 
-    All coefficients are in [0, 1] and govern how strongly each fuzzy rule
-    contributes to the opportunity, cover, pause and stop signals.
+    All coefficients are constrained to [0, 1] and directly modulate the
+    opportunity, cover, pause and stop rule strengths or the final abstention
+    consequence. ASOC V2 optimizes these values only on policy-validation data.
     """
 
     opportunity_entropy_weight: float = 1.0
@@ -40,6 +41,12 @@ class FuzzyWeights:
     abstention_cover_weight: float = 0.45
     abstention_pause_weight: float = 0.40
     abstention_stop_weight: float = 0.65
+
+    def __post_init__(self) -> None:
+        for item in fields(self):
+            value = float(getattr(self, item.name))
+            if not 0.0 <= value <= 1.0:
+                raise ValueError(f"{item.name} must lie in [0, 1]")
 
 
 class FuzzyRateController:
@@ -70,17 +77,28 @@ class FuzzyRateController:
 
         w = self.weights
         risk_block = max(risk_high, uncertainty_high, fragility_high)
+
         opportunity = (
-            entropy_high
+            w.opportunity_entropy_weight
+            * entropy_high
             * (1.0 - risk_block)
             * (
                 (1.0 - w.opportunity_payload_weight)
                 + w.opportunity_payload_weight * payload_high
             )
         )
-        cover_weight = max(entropy_low, risk_block) * (1.0 - dead_end_high)
-        pause_weight = max(risk_block * payload_high, fragility_high) * (1.0 - dead_end_high)
-        stop_weight = max(dead_end_high, risk_block * (1.0 - payload_high))
+        cover_weight = max(
+            w.cover_entropy_weight * entropy_low,
+            risk_block,
+        ) * (1.0 - dead_end_high)
+        pause_weight = max(
+            w.pause_risk_weight * risk_block * payload_high,
+            fragility_high,
+        ) * (1.0 - dead_end_high)
+        stop_weight = max(
+            w.stop_dead_end_weight * dead_end_high,
+            risk_block * (1.0 - payload_high),
+        )
 
         abstention_score = _clip(
             w.abstention_cover_weight * cover_weight
