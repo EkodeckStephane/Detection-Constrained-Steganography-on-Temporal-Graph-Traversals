@@ -21,10 +21,9 @@ class ObservedOutgoingAdmissibility:
     """Domain-support oracle learned only from declared valid transitions.
 
     ``allow_global_catalog`` is appropriate only when domain semantics make
-    every catalog destination valid for an unseen actor (for example, an
-    actor may choose any public item). It must be disabled for mobility or
-    other carriers where unseen source-to-destination transitions would imply
-    physically or topologically invalid moves.
+    every catalog destination valid for an unseen actor. It remains disabled
+    for mobility or other carriers where unseen source-to-destination moves
+    would imply physically or topologically invalid transitions.
     """
 
     def __init__(self, *, allow_global_catalog: bool = False) -> None:
@@ -82,13 +81,72 @@ class ObservedOutgoingAdmissibility:
         )
 
 
+class PublicCatalogAdmissibility:
+    """Public action-space oracle for actor-to-item interaction domains.
+
+    The catalog defines *which actions are valid*, not their probabilities.
+    Frequencies and temporal conditionals remain learned only from the declared
+    cover-training region. A fixed catalog may therefore be supplied from a
+    public domain schema without leaking validation/test outcome frequencies.
+
+    When no catalog is supplied, the class conservatively falls back to the
+    destinations observed in the training frame.
+    """
+
+    def __init__(self, catalog: Iterable[Hashable] | None = None) -> None:
+        self._fixed_catalog = None if catalog is None else frozenset(catalog)
+        self._catalog: frozenset[Hashable] = frozenset()
+
+    def fit(self, frame: pd.DataFrame) -> PublicCatalogAdmissibility:
+        required = {"source", "destination"}
+        missing = required - set(frame.columns)
+        if missing:
+            raise ValueError(f"Missing admissibility columns: {sorted(missing)}")
+        if frame.empty:
+            raise ValueError("Cannot fit admissibility on an empty frame")
+        observed = frozenset(frame["destination"].tolist())
+        catalog = self._fixed_catalog if self._fixed_catalog is not None else observed
+        if not observed.issubset(catalog):
+            raise ValueError("Public catalog must contain every cover-training destination")
+        if not catalog:
+            raise ValueError("Public catalog must be non-empty")
+        self._catalog = frozenset(catalog)
+        return self
+
+    def actions(
+        self,
+        source: Hashable,
+        previous_destination: Hashable | None = None,
+    ) -> frozenset[Hashable]:
+        del source, previous_destination
+        return self._catalog
+
+    def contains(
+        self,
+        source: Hashable,
+        action: Hashable,
+        previous_destination: Hashable | None = None,
+    ) -> bool:
+        del source, previous_destination
+        return action in self._catalog
+
+    def stats(self) -> AdmissibilityStats:
+        if not self._catalog:
+            raise ValueError("Admissibility oracle has not been fitted")
+        return AdmissibilityStats(
+            sources=0,
+            destinations=len(self._catalog),
+            observed_edges=0,
+        )
+
+
 class AdmissibilityConstrainedCoverModel:
     """Restrict and renormalize a probabilistic cover model on valid actions."""
 
     def __init__(
         self,
         base_model: CoverModel,
-        oracle: ObservedOutgoingAdmissibility,
+        oracle: ObservedOutgoingAdmissibility | PublicCatalogAdmissibility,
     ) -> None:
         self.base_model = base_model
         self.oracle = oracle
@@ -132,7 +190,7 @@ class AdmissibilityConstrainedCoverModel:
 
 
 def all_actions_are_admissible(
-    oracle: ObservedOutgoingAdmissibility,
+    oracle: ObservedOutgoingAdmissibility | PublicCatalogAdmissibility,
     rows: Iterable[tuple[Hashable, Hashable, Hashable | None]],
 ) -> bool:
     return all(
