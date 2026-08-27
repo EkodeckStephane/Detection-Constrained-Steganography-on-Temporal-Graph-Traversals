@@ -7,11 +7,27 @@ scientific_object:
   objective: maximize_payload_under_detectability_and_decodability_constraints
 
 splits:
-  cover_train_fraction: 0.55
-  eve_train_fraction: 0.15
-  policy_validation_fraction: 0.15
-  sealed_test_fraction: 0.15
+  target_fractions:
+    cover_train: 0.55
+    eve_train: 0.15
+    policy_validation: 0.15
+    sealed_test: 0.15
   preserve_timestamp_ties: true
+  preserve_whole_sequences_or_sessions: true
+  boundary_policy: choose_causal_sequence_safe_boundaries_nearest_target_fractions
+  report_effective_fractions: true
+  t_drive:
+    rationale: sessions_do_not_cross_midnight_and_intra_day_quantile_cuts_discard_too_many_sessions
+    fixed_day_end_boundaries_utc:
+      - '2008-02-05T23:59:59Z'
+      - '2008-02-06T23:59:59Z'
+      - '2008-02-07T23:59:59Z'
+    effective_point_fractions:
+      cover_train: 0.6153394870958454
+      eve_train: 0.14407173676628615
+      policy_validation: 0.137354843489793
+      sealed_test: 0.10323393264807543
+    boundary_quarantine_sessions: 0
 
 datasets:
   - id: tgbl-wiki
