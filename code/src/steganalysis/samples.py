@@ -3,11 +3,13 @@ from __future__ import annotations
 import math
 from collections.abc import Hashable, Sequence
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import pandas as pd
 
 from models.cover_model import CoverModel
+from models.temporal import temporal_history_key
 from stego.coding import Candidate, encode_next_action, encode_next_action_range
 
 FEATURE_COLUMNS = [
@@ -67,25 +69,29 @@ def make_steganalysis_records(
 
     The natural path is a counterfactual cover trajectory and is updated with
     the observed natural action. The stego path is the transmitted trajectory
-    and is updated with the *emitted* stego action. This distinction is a hard
-    invariant: once the encoder changes an action, all later stego candidate
-    distributions are conditioned on that emitted history rather than on the
-    unobserved natural counterfactual.
+    and is updated with the *emitted* stego action. When sequence identifiers
+    are available, both histories are isolated by sequence so independent
+    trajectories cannot contaminate one another through a shared graph node.
     """
 
     rows = []
     rng = np.random.default_rng(config.seed + _stable_offset(split))
-    natural_previous_by_source: dict[Hashable, Hashable] = {}
-    stego_previous_by_source: dict[Hashable, Hashable] = {}
-    previous_timestamp_by_source: dict[Hashable, float] = {}
+    natural_previous_by_history: dict[Hashable, Hashable] = {}
+    stego_previous_by_history: dict[Hashable, Hashable] = {}
+    previous_timestamp_by_history: dict[Hashable, float] = {}
     ordered = frame.sort_values(["timestamp"], kind="stable")
 
-    for index, record in enumerate(
-        ordered[["source", "destination", "timestamp"]].itertuples(index=False)
-    ):
-        source, natural_destination, timestamp = record
-        natural_previous = natural_previous_by_source.get(source)
-        stego_previous = stego_previous_by_source.get(source)
+    columns = ["source", "destination", "timestamp"]
+    has_sequence = "sequence_id" in ordered.columns
+    if has_sequence:
+        columns.append("sequence_id")
+
+    for index, record in enumerate(ordered[columns].itertuples(index=False, name=None)):
+        source, natural_destination, timestamp = record[0], record[1], record[2]
+        sequence_id: Any | None = record[3] if has_sequence else None
+        history_key = temporal_history_key(source, sequence_id)
+        natural_previous = natural_previous_by_history.get(history_key)
+        stego_previous = stego_previous_by_history.get(history_key)
 
         natural_candidates = model.candidate_distribution(source, natural_previous)
         stego_candidates = model.candidate_distribution(source, stego_previous)
@@ -134,15 +140,18 @@ def make_steganalysis_records(
             stego_mode = "FORCED_EMBED"
 
         gap = (
-            float(timestamp) - float(previous_timestamp_by_source[source])
-            if source in previous_timestamp_by_source
+            float(timestamp) - float(previous_timestamp_by_history[history_key])
+            if history_key in previous_timestamp_by_history
             else 0.0
         )
+        sequence_value = "" if sequence_id is None or _is_missing(sequence_id) else str(sequence_id)
 
         rows.append(
             {
                 "split": split,
                 "pair_id": index,
+                "source": str(source),
+                "sequence_id": sequence_value,
                 "label": 0,
                 "action": str(natural_destination),
                 "previous_action": "" if natural_previous is None else str(natural_previous),
@@ -169,6 +178,8 @@ def make_steganalysis_records(
             {
                 "split": split,
                 "pair_id": index,
+                "source": str(source),
+                "sequence_id": sequence_value,
                 "label": 1,
                 "action": str(stego_action),
                 "previous_action": "" if stego_previous is None else str(stego_previous),
@@ -192,9 +203,9 @@ def make_steganalysis_records(
             }
         )
 
-        natural_previous_by_source[source] = natural_destination
-        stego_previous_by_source[source] = stego_action
-        previous_timestamp_by_source[source] = timestamp
+        natural_previous_by_history[history_key] = natural_destination
+        stego_previous_by_history[history_key] = stego_action
+        previous_timestamp_by_history[history_key] = float(timestamp)
         if hasattr(model, "update_timestamp"):
             model.update_timestamp(source, float(timestamp))
 
@@ -312,3 +323,10 @@ def _entropy(probabilities: Sequence[float]) -> float:
 
 def _stable_offset(value: str) -> int:
     return sum(ord(character) for character in value)
+
+
+def _is_missing(value: Any) -> bool:
+    try:
+        return bool(pd.isna(value))
+    except (TypeError, ValueError):
+        return False
