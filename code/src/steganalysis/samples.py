@@ -63,40 +63,64 @@ def make_steganalysis_records(
     split: str,
     config: SampleConfig,
 ) -> pd.DataFrame:
+    """Generate paired natural/stego records with distinct causal histories.
+
+    The natural path is a counterfactual cover trajectory and is updated with
+    the observed natural action. The stego path is the transmitted trajectory
+    and is updated with the *emitted* stego action. This distinction is a hard
+    invariant: once the encoder changes an action, all later stego candidate
+    distributions are conditioned on that emitted history rather than on the
+    unobserved natural counterfactual.
+    """
+
     rows = []
     rng = np.random.default_rng(config.seed + _stable_offset(split))
-    previous_by_source: dict[Hashable, Hashable] = {}
+    natural_previous_by_source: dict[Hashable, Hashable] = {}
+    stego_previous_by_source: dict[Hashable, Hashable] = {}
     previous_timestamp_by_source: dict[Hashable, float] = {}
     ordered = frame.sort_values(["timestamp"], kind="stable")
-    for index, record in enumerate(ordered[["source", "destination", "timestamp"]].itertuples(index=False)):
+
+    for index, record in enumerate(
+        ordered[["source", "destination", "timestamp"]].itertuples(index=False)
+    ):
         source, natural_destination, timestamp = record
-        previous = previous_by_source.get(source)
-        candidates = model.candidate_distribution(source, previous)
+        natural_previous = natural_previous_by_source.get(source)
+        stego_previous = stego_previous_by_source.get(source)
+
+        natural_candidates = model.candidate_distribution(source, natural_previous)
+        stego_candidates = model.candidate_distribution(source, stego_previous)
         bits = rng.integers(0, 2, size=config.max_bits_per_transition).tolist()
-        encoded = _encode(bits, candidates, config=config)
-        entropy = _entropy([candidate.probability for candidate in candidates])
+
+        natural_encoded = _encode(bits, natural_candidates, config=config)
+        natural_entropy = _entropy(
+            [candidate.probability for candidate in natural_candidates]
+        )
+        natural_encoded_features = _action_position_features(
+            source=source,
+            action=natural_encoded.action,
+            candidates=natural_candidates,
+        )
+        natural_feasible = _embedding_feasible(
+            natural_encoded,
+            entropy=natural_entropy,
+            encoded_features=natural_encoded_features,
+            config=config,
+        )
+
+        encoded = _encode(bits, stego_candidates, config=config)
+        stego_entropy = _entropy([candidate.probability for candidate in stego_candidates])
         encoded_features = _action_position_features(
             source=source,
             action=encoded.action,
-            candidates=candidates,
+            candidates=stego_candidates,
         )
-        can_embed = (
-            encoded.bits_consumed > 0
-            and entropy >= config.min_entropy_bits
-            and encoded.local_total_variation <= config.max_local_total_variation
-            and encoded.local_kl_bits <= config.max_local_kl_bits
-            and encoded_features["action_probability"] >= config.min_encoded_probability
-            and encoded_features["surprise_bits"] <= config.max_encoded_surprise_bits
-            and encoded_features["rank_fraction"] <= config.max_encoded_rank_fraction
-            and (
-                not config.require_encoded_top_action
-                or bool(encoded_features["is_top_action"])
-            )
-            and (
-                not config.require_encoded_self_loop
-                or bool(encoded_features["self_loop"])
-            )
+        can_embed = _embedding_feasible(
+            encoded,
+            entropy=stego_entropy,
+            encoded_features=encoded_features,
+            config=config,
         )
+
         stego_action = encoded.action if can_embed else natural_destination
         stego_bits = encoded.bits_consumed if can_embed else 0
         stego_tv = encoded.local_total_variation if can_embed else 0.0
@@ -108,33 +132,36 @@ def make_steganalysis_records(
             stego_tv = encoded.local_total_variation
             stego_kl = encoded.local_kl_bits
             stego_mode = "FORCED_EMBED"
+
         gap = (
             float(timestamp) - float(previous_timestamp_by_source[source])
             if source in previous_timestamp_by_source
             else 0.0
         )
+
         rows.append(
             {
                 "split": split,
                 "pair_id": index,
                 "label": 0,
                 "action": str(natural_destination),
+                "previous_action": "" if natural_previous is None else str(natural_previous),
                 "stego_mode": "NATURAL",
                 **_features(
                     source=source,
                     action=natural_destination,
-                    previous=previous,
-                    candidates=candidates,
+                    previous=natural_previous,
+                    candidates=natural_candidates,
                     gap=gap,
                     bits_consumed=0,
                     local_total_variation=0.0,
                     local_kl_bits=0.0,
-                    encoder_capacity_bits=encoded.bits_consumed,
-                    encoder_tv_bound=encoded.local_total_variation,
-                    encoder_kl_bound=encoded.local_kl_bits,
-                    embedding_feasible=can_embed,
+                    encoder_capacity_bits=natural_encoded.bits_consumed,
+                    encoder_tv_bound=natural_encoded.local_total_variation,
+                    encoder_kl_bound=natural_encoded.local_kl_bits,
+                    embedding_feasible=natural_feasible,
                     training_destination_seen=natural_destination in model.destinations,
-                    context_seen=model.has_context(source, previous),
+                    context_seen=model.has_context(source, natural_previous),
                 ),
             }
         )
@@ -144,12 +171,13 @@ def make_steganalysis_records(
                 "pair_id": index,
                 "label": 1,
                 "action": str(stego_action),
+                "previous_action": "" if stego_previous is None else str(stego_previous),
                 "stego_mode": stego_mode,
                 **_features(
                     source=source,
                     action=stego_action,
-                    previous=previous,
-                    candidates=candidates,
+                    previous=stego_previous,
+                    candidates=stego_candidates,
                     gap=gap,
                     bits_consumed=stego_bits,
                     local_total_variation=stego_tv,
@@ -159,19 +187,48 @@ def make_steganalysis_records(
                     encoder_kl_bound=encoded.local_kl_bits,
                     embedding_feasible=can_embed,
                     training_destination_seen=stego_action in model.destinations,
-                    context_seen=model.has_context(source, previous),
+                    context_seen=model.has_context(source, stego_previous),
                 ),
             }
         )
-        previous_by_source[source] = natural_destination
+
+        natural_previous_by_source[source] = natural_destination
+        stego_previous_by_source[source] = stego_action
         previous_timestamp_by_source[source] = timestamp
         if hasattr(model, "update_timestamp"):
             model.update_timestamp(source, float(timestamp))
+
     return pd.DataFrame(rows)
 
 
 def feature_matrix(frame: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
     return frame[FEATURE_COLUMNS].to_numpy(dtype=float), frame["label"].to_numpy(dtype=int)
+
+
+def _embedding_feasible(
+    encoded: object,
+    *,
+    entropy: float,
+    encoded_features: dict[str, float | int],
+    config: SampleConfig,
+) -> bool:
+    return bool(
+        encoded.bits_consumed > 0
+        and entropy >= config.min_entropy_bits
+        and encoded.local_total_variation <= config.max_local_total_variation
+        and encoded.local_kl_bits <= config.max_local_kl_bits
+        and encoded_features["action_probability"] >= config.min_encoded_probability
+        and encoded_features["surprise_bits"] <= config.max_encoded_surprise_bits
+        and encoded_features["rank_fraction"] <= config.max_encoded_rank_fraction
+        and (
+            not config.require_encoded_top_action
+            or bool(encoded_features["is_top_action"])
+        )
+        and (
+            not config.require_encoded_self_loop
+            or bool(encoded_features["self_loop"])
+        )
+    )
 
 
 def _features(
