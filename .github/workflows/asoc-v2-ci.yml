@@ -8,6 +8,10 @@ on:
     branches:
       - master
 
+concurrency:
+  group: asoc-v2-causal-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -27,9 +31,16 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
-      - name: Run causal and controller tests
+      - name: Run ASOC V2 hard-invariant tests
         run: |
-          pytest -q tests/test_steganalysis_samples.py tests/test_phase6_fuzzy.py tests/test_phase5_coding.py tests/test_temporal_model.py
+          pytest -q \
+            tests/test_steganalysis_samples.py \
+            tests/test_temporal_model.py \
+            tests/test_data_pipeline.py \
+            tests/test_admissibility.py \
+            tests/test_sealed_selection.py \
+            tests/test_phase6_fuzzy.py \
+            tests/test_phase5_coding.py
       - name: Run full unit suite
         run: pytest -q tests
       - name: Validate project structure
