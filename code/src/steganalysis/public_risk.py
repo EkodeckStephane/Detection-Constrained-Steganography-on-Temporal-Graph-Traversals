@@ -20,6 +20,22 @@ class PublicRiskEnvelope:
     candidate_count: int
 
 
+@dataclass(frozen=True)
+class PublicReferenceRisk:
+    """Risk of a deterministic public reference action under frozen design-Eves.
+
+    The primary ASOC V2 controller uses the top-probability cover action as a
+    low-cost, secret-independent state-risk proxy. Security is *not* inferred
+    from this proxy: every frozen policy is still certified using detector AUC
+    on the actions it actually emits. The full worst-action envelope remains
+    available as a conservative sensitivity analysis.
+    """
+
+    action: Hashable
+    risk: float
+    candidate_count: int
+
+
 def candidate_public_feature_matrix(
     *,
     source: Hashable,
@@ -70,6 +86,34 @@ def candidate_public_feature_matrix(
         rows.append([float(feature[name]) for name in FEATURE_COLUMNS])
         actions.append(action)
     return np.asarray(rows, dtype=float), tuple(actions)
+
+
+def public_reference_risk(
+    detectors: Mapping[str, OrientedDetector],
+    *,
+    source: Hashable,
+    previous_action: Hashable | None,
+    candidates: Sequence[Candidate],
+    gap: float,
+    context_seen: bool,
+    training_destinations: frozenset[Hashable] | set[Hashable],
+) -> PublicReferenceRisk:
+    """Score the deterministic top-Q cover action before secret action selection."""
+
+    matrix, actions = candidate_public_feature_matrix(
+        source=source,
+        previous_action=previous_action,
+        candidates=candidates,
+        gap=gap,
+        context_seen=context_seen,
+        training_destinations=training_destinations,
+    )
+    risks = worst_case_design_risk(detectors, matrix[:1])
+    return PublicReferenceRisk(
+        action=actions[0],
+        risk=float(risks[0]),
+        candidate_count=len(actions),
+    )
 
 
 def public_state_risk_envelope(
