@@ -14,5 +14,6 @@ py-tgb>=2.2,<3
 pyarrow>=17,<24
 scikit-fuzzy>=0.5
 reedsolo>=1.7
+cryptography>=43,<48
 pytest>=8.3
 ruff>=0.6
