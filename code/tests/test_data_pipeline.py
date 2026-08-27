@@ -9,7 +9,7 @@ import pyarrow.parquet as pq
 from data.adapters import read_geolife_plt, read_porto_csv, read_tdrive_directory
 from data.geolife_stream import stream_geolife_archive
 from data.schema import validate_events
-from data.splits import assign_causal_splits
+from data.splits import assign_causal_splits, assign_four_way_causal_splits
 from data.statistics import describe_temporal_events
 
 
@@ -30,6 +30,38 @@ def test_causal_split_keeps_timestamp_ties_together() -> None:
     assert split.groupby("timestamp")["split"].nunique().max() == 1
     assert split.loc[split["split"] == "train", "timestamp"].max() <= cutoffs.train_end
     assert split.loc[split["split"] == "test", "timestamp"].min() > cutoffs.validation_end
+
+
+def test_four_way_split_seals_final_region_and_preserves_timestamp_ties() -> None:
+    frame = pd.DataFrame(
+        {
+            "event_id": range(20),
+            "source": [index % 4 for index in range(20)],
+            "destination": [(index + 1) % 5 for index in range(20)],
+            "timestamp": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 14, 15, 16, 17, 18],
+            "label": 0,
+            "sequence_id": pd.NA,
+        }
+    )
+    validate_events(frame)
+    split, cutoffs = assign_four_way_causal_splits(
+        frame,
+        cover_train_fraction=0.50,
+        eve_train_fraction=0.15,
+        policy_validation_fraction=0.15,
+    )
+
+    assert set(split["split"]) == {
+        "cover_train",
+        "eve_train",
+        "policy_validation",
+        "sealed_test",
+    }
+    assert split.groupby("timestamp")["split"].nunique().max() == 1
+    assert split.loc[split["split"] == "cover_train", "timestamp"].max() <= cutoffs.cover_train_end
+    assert split.loc[split["split"] == "eve_train", "timestamp"].min() > cutoffs.cover_train_end
+    assert split.loc[split["split"] == "policy_validation", "timestamp"].min() > cutoffs.eve_train_end
+    assert split.loc[split["split"] == "sealed_test", "timestamp"].min() > cutoffs.policy_validation_end
 
 
 def test_statistics_report_temporal_structure() -> None:
