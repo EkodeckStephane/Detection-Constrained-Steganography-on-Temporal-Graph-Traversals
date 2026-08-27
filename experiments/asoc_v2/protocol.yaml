@@ -16,6 +16,13 @@ splits:
   preserve_whole_sequences_or_sessions: true
   boundary_policy: choose_causal_sequence_safe_boundaries_nearest_target_fractions
   report_effective_fractions: true
+  eve_train_internal_split:
+    detector_fit_fraction: 0.75
+    orientation_calibration_fraction: 0.25
+    chronological: true
+    preserve_timestamp_ties: true
+    policy_validation_access: false
+    sealed_test_access: false
   t_drive:
     rationale: sessions_do_not_cross_midnight_and_intra_day_quantile_cuts_discard_too_many_sessions
     fixed_day_end_boundaries_utc:
@@ -78,6 +85,31 @@ policy:
   stop_semantics: terminate_covert_session_then_follow_valid_cover_continuations
   pause_semantics: emit_valid_cover_continuation_without_consuming_payload
   primary: optimized_takagi_sugeno
+  steganalysis_risk_input: maximum_oriented_design_eve_score
+  optimization:
+    algorithm: differential_evolution
+    implementation: scipy.optimize.differential_evolution
+    seed: 20260827
+    population_size: 8
+    generations: 8
+    polish: false
+    workers: 1
+    region: policy_validation_only
+    tuned_parameters:
+      - opportunity_entropy_weight
+      - opportunity_payload_weight
+      - cover_entropy_weight
+      - pause_risk_weight
+      - stop_dead_end_weight
+      - abstention_cover_weight
+      - abstention_pause_weight
+      - abstention_stop_weight
+      - stop_threshold
+    parameter_bounds:
+      consequence_weights: [0.0, 1.0]
+      stop_threshold: [0.80, 0.99]
+    final_selection: lexicographic_feasibility_then_payload_then_completion_then_lower_worst_auc_then_lower_abstention
+    sealed_metrics_visible_to_optimizer: false
   baselines:
     - fixed_entropy_threshold
     - hand_tuned_fuzzy
@@ -89,10 +121,18 @@ policy:
 
 steganalysis:
   detector_auc_budget: 0.60
-  selection_rule: max_payload_with_validation_auc_ci_upper_at_or_below_budget
+  primary_auc: adversarial_auc_max_of_auc_and_one_minus_auc
+  selection_rule: max_payload_with_validation_worst_eve_auc_ci_upper_at_or_below_budget
   design_eves:
     - linear
     - forest
+  design_eve_training_intensities:
+    - 0.05
+    - 0.20
+    - 0.50
+    - 1.00
+  score_orientation: frozen_on_eve_train_orientation_calibration_block
+  risk_aggregation: maximum_oriented_score_across_design_eves
   unseen_eves:
     - mlp_public_features
     - gru_sequence
@@ -104,6 +144,7 @@ steganalysis:
 uncertainty:
   bootstrap_resamples: 10000
   confidence_level: 0.95
+  worst_eve_bootstrap: resample_clusters_then_take_max_adversarial_auc_across_design_eves_per_replicate
   cluster_unit_priority:
     - sequence_id
     - source
@@ -127,6 +168,7 @@ metrics:
     - invalid_transition_rate
   detection:
     - auc
+    - adversarial_auc
     - tpr_at_1pct_fpr
     - tpr_at_5pct_fpr
   control:
@@ -141,6 +183,8 @@ metrics:
     - mmd
 
 hard_gates:
+  zero_payload_public_feature_difference: 0.0
+  zero_payload_adversarial_auc: 0.5
   passive_state_mismatch_rate: 0.0
   passive_decode_success_rate: 1.0
   invalid_transition_rate: 0.0
