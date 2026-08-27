@@ -14,11 +14,26 @@ splits:
   preserve_timestamp_ties: true
 
 datasets:
-  - tgbl-wiki
-  - mooc
-  - lastfm
-  - geolife_cells
-  - t_drive_cells
+  - id: tgbl-wiki
+    transition_semantics: actor_action
+    cover_history_mode: actor_history
+    admissibility: observed_outgoing_with_global_catalog_for_unseen_actor
+  - id: mooc
+    transition_semantics: actor_action
+    cover_history_mode: actor_history
+    admissibility: observed_outgoing_with_global_catalog_for_unseen_actor
+  - id: lastfm
+    transition_semantics: actor_action
+    cover_history_mode: actor_history
+    admissibility: observed_outgoing_with_global_catalog_for_unseen_actor
+  - id: geolife_cells
+    transition_semantics: walk
+    cover_history_mode: walk_source
+    admissibility: observed_outgoing_only
+  - id: t_drive_cells
+    transition_semantics: walk
+    cover_history_mode: walk_source
+    admissibility: observed_outgoing_only
 
 sampling:
   row_policy: chronological
@@ -30,7 +45,7 @@ sampling:
     - null
 
 cover_model:
-  primary: temporal_source_previous_destination_backoff
+  primary: temporal_backoff_restricted_to_admissible_support
   prior_strength: 8.0
   top_k: 32
   diagnostics:
@@ -44,6 +59,8 @@ policy:
     - COVER
     - PAUSE
     - STOP
+  stop_semantics: terminate_covert_session_then_follow_valid_cover_continuations
+  pause_semantics: emit_valid_cover_continuation_without_consuming_payload
   primary: optimized_takagi_sugeno
   baselines:
     - fixed_entropy_threshold
@@ -91,6 +108,7 @@ metrics:
     - bit_error_rate
     - passive_decode_success_rate
     - passive_state_mismatch_rate
+    - invalid_transition_rate
   detection:
     - auc
     - tpr_at_1pct_fpr
@@ -109,6 +127,7 @@ metrics:
 hard_gates:
   passive_state_mismatch_rate: 0.0
   passive_decode_success_rate: 1.0
+  invalid_transition_rate: 0.0
   sealed_test_may_change_policy: false
 
 provenance:
