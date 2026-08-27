@@ -176,8 +176,7 @@ class DetectorConstrainedFuzzyOptimizer:
             return 100.0 + 1000.0 * gate_penalty - 0.01 * evaluation.payload_rate
         return -evaluation.payload_rate - 1e-3 * evaluation.completion_rate
 
-    @staticmethod
-    def _selection_key(item: EvaluatedCandidate) -> tuple[float, ...]:
+    def _selection_key(self, item: EvaluatedCandidate) -> tuple[float, ...]:
         evaluation = item.evaluation
         if item.feasible:
             return (
@@ -188,7 +187,7 @@ class DetectorConstrainedFuzzyOptimizer:
                 -evaluation.abstention_rate,
             )
         total_violation = (
-            max(0.0, evaluation.auc_ci_upper - 0.5)
+            max(0.0, evaluation.auc_ci_upper - self.detector_auc_budget)
             + evaluation.invalid_transition_rate
             + evaluation.state_mismatch_rate
             + max(0.0, 1.0 - evaluation.passive_decode_success_rate)
