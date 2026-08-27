@@ -15,6 +15,17 @@ class TemporalCutoffs:
     test_fraction: float
 
 
+@dataclass(frozen=True)
+class FourWayTemporalCutoffs:
+    cover_train_end: float
+    eve_train_end: float
+    policy_validation_end: float
+    cover_train_fraction: float
+    eve_train_fraction: float
+    policy_validation_fraction: float
+    sealed_test_fraction: float
+
+
 def assign_causal_splits(
     frame: pd.DataFrame,
     *,
@@ -60,3 +71,109 @@ def assign_causal_splits(
         validation_fraction=float(fractions["validation"]),
         test_fraction=float(fractions["test"]),
     )
+
+
+def assign_four_way_causal_splits(
+    frame: pd.DataFrame,
+    *,
+    cover_train_fraction: float = 0.55,
+    eve_train_fraction: float = 0.15,
+    policy_validation_fraction: float = 0.15,
+) -> tuple[pd.DataFrame, FourWayTemporalCutoffs]:
+    """Create four non-overlapping chronological regions for sealed evaluation.
+
+    The regions have distinct scientific roles:
+
+    - ``cover_train`` fits the cover model;
+    - ``eve_train`` fits detector families used during design;
+    - ``policy_validation`` selects controller parameters and the operating point;
+    - ``sealed_test`` is read only after all design choices are frozen.
+
+    Timestamp ties are kept in the same region to prevent boundary leakage.
+    """
+
+    if frame.empty:
+        raise ValueError("Cannot split an empty table")
+    fractions_requested = (
+        cover_train_fraction,
+        eve_train_fraction,
+        policy_validation_fraction,
+    )
+    if any(value <= 0 for value in fractions_requested):
+        raise ValueError("All design-region fractions must be positive")
+    if sum(fractions_requested) >= 1:
+        raise ValueError("A positive sealed-test fraction is required")
+    if not frame["timestamp"].is_monotonic_increasing:
+        raise ValueError("Frame must be sorted chronologically before splitting")
+
+    timestamps = frame["timestamp"].to_numpy(dtype=float)
+    if np.unique(timestamps).size < 4:
+        raise ValueError("At least four distinct timestamps are required")
+
+    cover_end = _cutoff_at_fraction(timestamps, cover_train_fraction)
+    eve_end = _strict_later_cutoff(
+        timestamps,
+        _cutoff_at_fraction(timestamps, cover_train_fraction + eve_train_fraction),
+        previous=cover_end,
+    )
+    policy_end = _strict_later_cutoff(
+        timestamps,
+        _cutoff_at_fraction(
+            timestamps,
+            cover_train_fraction + eve_train_fraction + policy_validation_fraction,
+        ),
+        previous=eve_end,
+    )
+    if policy_end >= float(timestamps[-1]):
+        raise ValueError("The requested fractions leave no non-empty sealed test")
+
+    result = frame.copy()
+    result["split"] = np.select(
+        [
+            result["timestamp"] <= cover_end,
+            result["timestamp"] <= eve_end,
+            result["timestamp"] <= policy_end,
+        ],
+        ["cover_train", "eve_train", "policy_validation"],
+        default="sealed_test",
+    )
+
+    expected = {"cover_train", "eve_train", "policy_validation", "sealed_test"}
+    observed = set(result["split"].unique())
+    if observed != expected:
+        raise ValueError("The timestamps do not permit four non-empty causal regions")
+    if result.groupby("timestamp")["split"].nunique().max() != 1:
+        raise AssertionError("Timestamp ties crossed a causal split boundary")
+
+    fractions = result["split"].value_counts(normalize=True)
+    return result, FourWayTemporalCutoffs(
+        cover_train_end=cover_end,
+        eve_train_end=eve_end,
+        policy_validation_end=policy_end,
+        cover_train_fraction=float(fractions["cover_train"]),
+        eve_train_fraction=float(fractions["eve_train"]),
+        policy_validation_fraction=float(fractions["policy_validation"]),
+        sealed_test_fraction=float(fractions["sealed_test"]),
+    )
+
+
+def _cutoff_at_fraction(timestamps: np.ndarray, fraction: float) -> float:
+    position = min(
+        len(timestamps) - 1,
+        max(0, int(np.ceil(float(fraction) * len(timestamps))) - 1),
+    )
+    return float(timestamps[position])
+
+
+def _strict_later_cutoff(
+    timestamps: np.ndarray,
+    proposed: float,
+    *,
+    previous: float,
+) -> float:
+    if proposed > previous:
+        return float(proposed)
+    later = timestamps[timestamps > previous]
+    if later.size == 0:
+        raise ValueError("Insufficient distinct timestamps for causal regions")
+    return float(later[0])
