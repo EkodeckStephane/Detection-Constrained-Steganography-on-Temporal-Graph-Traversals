@@ -38,7 +38,13 @@ jobs:
             tests/test_temporal_model.py \
             tests/test_data_pipeline.py \
             tests/test_admissibility.py \
+            tests/test_asoc_cover.py \
             tests/test_sealed_selection.py \
+            tests/test_auc_bootstrap.py \
+            tests/test_detector_metrics.py \
+            tests/test_fuzzy_optimization.py \
+            tests/test_causal_arithmetic.py \
+            tests/test_policy_session.py \
             tests/test_phase6_fuzzy.py \
             tests/test_phase5_coding.py
       - name: Run full unit suite
