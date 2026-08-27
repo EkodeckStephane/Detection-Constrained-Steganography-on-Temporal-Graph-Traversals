@@ -1,0 +1,119 @@
+campaign: asoc_v2_causal_detector_constrained_control
+status: design_only_until_sealed_freeze
+
+scientific_object:
+  state_recursion: emitted_action
+  carrier: temporal_graph_continuation
+  objective: maximize_payload_under_detectability_and_decodability_constraints
+
+splits:
+  cover_train_fraction: 0.55
+  eve_train_fraction: 0.15
+  policy_validation_fraction: 0.15
+  sealed_test_fraction: 0.15
+  preserve_timestamp_ties: true
+
+datasets:
+  - tgbl-wiki
+  - mooc
+  - lastfm
+  - geolife_cells
+  - t_drive_cells
+
+sampling:
+  row_policy: chronological
+  max_rows_per_region: null
+  sensitivity_caps:
+    - 10000
+    - 25000
+    - 50000
+    - null
+
+cover_model:
+  primary: temporal_source_previous_destination_backoff
+  prior_strength: 8.0
+  top_k: 32
+  diagnostics:
+    - gru
+    - transformer
+    - temporal_gnn
+
+policy:
+  modes:
+    - EMBED
+    - COVER
+    - PAUSE
+    - STOP
+  primary: optimized_takagi_sugeno
+  baselines:
+    - fixed_entropy_threshold
+    - hand_tuned_fuzzy
+    - detector_unaware_range
+    - random_admissible
+    - coupling_inspired_distribution_preserving
+  optional_reference:
+    - learned_constrained_policy
+
+steganalysis:
+  detector_auc_budget: 0.60
+  selection_rule: max_payload_with_validation_auc_ci_upper_at_or_below_budget
+  design_eves:
+    - linear
+    - forest
+  unseen_eves:
+    - mlp_public_features
+    - gru_sequence
+    - transformer_sequence
+    - temporal_gnn
+    - white_box_diagnostic
+  test_policy: sealed_once_frozen
+
+uncertainty:
+  bootstrap_resamples: 10000
+  confidence_level: 0.95
+  cluster_unit_priority:
+    - sequence_id
+    - source
+  message_seeds:
+    - 11
+    - 23
+    - 37
+    - 53
+    - 71
+  interpretation_of_message_seeds: technical_stochastic_repeats
+
+metrics:
+  communication:
+    - bits_per_transition
+    - bits_per_trajectory
+    - completion_rate
+  reliability:
+    - bit_error_rate
+    - passive_decode_success_rate
+    - passive_state_mismatch_rate
+  detection:
+    - auc
+    - tpr_at_1pct_fpr
+    - tpr_at_5pct_fpr
+  control:
+    - embed_rate
+    - cover_rate
+    - pause_rate
+    - stop_rate
+  distribution:
+    - local_kl_bits
+    - local_total_variation
+    - js_distance
+    - mmd
+
+hard_gates:
+  passive_state_mismatch_rate: 0.0
+  passive_decode_success_rate: 1.0
+  sealed_test_may_change_policy: false
+
+provenance:
+  output_root: results_final
+  require_commit_sha: true
+  require_config_sha256: true
+  require_dataset_manifest_sha256: true
+  require_seed_record: true
