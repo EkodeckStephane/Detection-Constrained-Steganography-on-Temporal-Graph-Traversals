@@ -23,6 +23,21 @@ H_{t+1} = F(H_t, A_t).
 
 This emitted-history recursion is a hard invariant of every experiment.
 
+## Admissible support is not the probability model
+
+The ASOC V2 implementation must distinguish two objects that were conflated in the earlier artifact:
+
+- `A(H_t)`: the domain-valid continuation set supplied by an admissibility oracle;
+- `Q_theta(a | H_t)`: learned probabilities restricted and renormalized on that admissible set.
+
+A global probabilistic backoff is not, by itself, evidence that a continuation is domain-valid. In particular, mobility traces must not create transitions that violate the declared cell-transition/reachability rule. For actor-to-item domains, the admissibility rule must be stated independently of the learned probability ranking.
+
+If an observed natural counterfactual ceases to be admissible after an earlier steganographic action, the stego trajectory cannot silently reuse it. COVER/PAUSE behavior must choose a valid cover continuation from the current stego state.
+
+## History identity
+
+Causal memory is keyed by `sequence_id` when a dataset defines trajectories or sessions. It falls back to actor/source identity only when no sequence identifier exists. Independent trajectories that share a graph node must never share previous-action state.
+
 ## Protected contribution
 
 The contribution to protect is not “fuzzy steganography” or “range coding on graphs.” It is:
@@ -33,11 +48,11 @@ The contribution to protect is not “fuzzy steganography” or “range coding 
 
 ### C1 — Endogenous-support formulation
 
-Formalize temporal-graph steganography as a causal channel in which each emitted action changes the future continuation support. Separate the natural process P, learned cover Q_theta, and stego policy S_pi.
+Formalize temporal-graph steganography as a causal channel in which each emitted action changes the future continuation support. Separate the natural process P, admissibility oracle A, learned cover Q_theta, and stego policy S_pi.
 
 ### C2 — Soft-computing constrained policy
 
-Treat EMBED/COVER/PAUSE/STOP and local payload as actions of a decision policy. The optimized Takagi-Sugeno policy is an interpretable soft-computing realization and is compared with fixed-threshold, hand-tuned fuzzy, and learned/optimization baselines.
+Treat EMBED/COVER/PAUSE/STOP and local payload as actions of a decision policy. The optimized Takagi-Sugeno policy is an interpretable soft-computing realization and is compared with fixed-threshold, hand-tuned fuzzy, detector-unaware, and learned/optimization baselines.
 
 ### C3 — Trajectory security relation and sealed evaluation
 
@@ -49,16 +64,20 @@ Use a conditional chain-rule relation from local divergence to trajectory diverg
 - exact synchronization outside the tested passive synchronized setting;
 - an empirical detector as an upper bound on an optimal adversary;
 - using mean held-out NLL as a pointwise model-divergence bound;
+- calling model support “valid temporal continuation” without an explicit admissibility rule;
 - any headline number generated before the ASOC V2 causal engine and sealed protocol are frozen.
 
 ## Hard scientific invariants
 
 1. The stego history is updated with the **emitted stego action**, not the natural counterfactual action.
 2. Natural and stego paths maintain distinct causal histories during paired evaluation.
-3. Cover-model fitting, design-Eve fitting, policy selection, and sealed testing use disjoint causal regions.
-4. The sealed test is never used to choose a policy, payload point, hyperparameter, or detector.
-5. All paper tables are generated from frozen result files; no headline value is manually transcribed.
-6. Message seeds are technical stochastic repetitions, not independent experimental units.
+3. Sequence/session identifiers isolate state whenever they are available.
+4. Every emitted action satisfies the current admissibility oracle.
+5. Cover-model fitting, design-Eve fitting, policy selection, and sealed testing use disjoint causal regions.
+6. The sealed test is never used to choose a policy, payload point, hyperparameter, or detector.
+7. All paper tables are generated from frozen result files; no headline value is manually transcribed.
+8. Message seeds are technical stochastic repetitions, not independent experimental units.
+9. Source/session/trajectory identifiers are retained in result records for cluster-aware uncertainty analysis.
 
 ## Current target title
 
