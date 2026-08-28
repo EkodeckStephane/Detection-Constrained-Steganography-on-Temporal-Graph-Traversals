@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -38,6 +40,16 @@ def test_known_walk_embedding_support_contains_only_observed_outgoing_edges() ->
     assert sum(item.probability for item in admissible) == pytest.approx(1.0)
     assert model.future_admissible_count("B") == 1
     assert model.future_admissible_count("D") == 0
+
+
+def test_walk_entropy_scale_is_cover_train_only_positive_and_cached() -> None:
+    model = WalkCoverModel(prior_strength=1.0, top_k=4).fit(_train())
+    first = model.robust_entropy_scale_bits(quantile=0.95)
+    second = model.robust_entropy_scale_bits(quantile=0.95)
+    assert first == second
+    assert 0.0 < first <= math.log2(4)
+    with pytest.raises(ValueError):
+        model.robust_entropy_scale_bits(quantile=0.0)
 
 
 def test_zero_payload_cover_preserves_natural_action_even_for_unseen_source() -> None:
