@@ -12,7 +12,17 @@ def read_bipartite_interactions(
     path: Path,
     *,
     chunksize: int = 50_000,
+    nrows: int | None = None,
 ) -> pd.DataFrame:
+    """Read a chronological actor-item stream using only the first four columns.
+
+    ``nrows`` is used by ASOC V2 design runs to read exactly the frozen
+    cover+Eve+policy-validation prefix. This prevents development and final
+    holdout rows from being parsed during policy design.
+    """
+
+    if nrows is not None and nrows < 1:
+        raise ValueError("nrows must be positive when supplied")
     chunks = []
     for chunk in pd.read_csv(
         path,
@@ -21,22 +31,32 @@ def read_bipartite_interactions(
         usecols=[0, 1, 2, 3],
         names=["source", "destination", "timestamp", "label"],
         chunksize=chunksize,
+        nrows=nrows,
     ):
         chunks.append(chunk)
+    if not chunks:
+        raise ValueError(f"No interaction rows found in {path}")
     frame = pd.concat(chunks, ignore_index=True)
+    if nrows is not None and len(frame) != nrows:
+        raise ValueError(f"Expected exactly {nrows} interaction rows, found {len(frame)}")
     frame["source"] = "user:" + frame["source"].astype(str)
     frame["destination"] = "item:" + frame["destination"].astype(str)
     frame.insert(0, "event_id", range(len(frame)))
     frame["sequence_id"] = pd.NA
-    frame = frame.sort_values(["timestamp", "event_id"], kind="stable").reset_index(drop=True)
-    frame["event_id"] = range(len(frame))
+    if not frame["timestamp"].is_monotonic_increasing:
+        raise ValueError("Raw actor-item stream must be chronological for prefix isolation")
     frame = frame[["event_id", "source", "destination", "timestamp", "label", "sequence_id"]]
     validate_events(frame)
     return frame
 
 
-def read_tgb_wiki(path: Path, *, chunksize: int = 50_000) -> pd.DataFrame:
-    return read_bipartite_interactions(path, chunksize=chunksize)
+def read_tgb_wiki(
+    path: Path,
+    *,
+    chunksize: int = 50_000,
+    nrows: int | None = None,
+) -> pd.DataFrame:
+    return read_bipartite_interactions(path, chunksize=chunksize, nrows=nrows)
 
 
 def read_tdrive_directory(path: Path) -> pd.DataFrame:
