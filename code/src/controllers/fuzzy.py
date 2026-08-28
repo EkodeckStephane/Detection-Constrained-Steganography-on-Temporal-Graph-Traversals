@@ -95,9 +95,16 @@ class FuzzyRateController:
             w.pause_risk_weight * risk_block * payload_high,
             fragility_high,
         ) * (1.0 - dead_end_high)
+
+        # STOP is terminal. It must therefore be driven by terminal channel
+        # evidence rather than by message progress. Low payload pressure means
+        # that a frame is near completion and must never make STOP more likely.
+        # Transient detector/uncertainty/fragility evidence is handled by PAUSE;
+        # only their simultaneous critical conjunction may terminate a session.
+        critical_risk = risk_high * uncertainty_high * fragility_high
         stop_weight = max(
             w.stop_dead_end_weight * dead_end_high,
-            risk_block * (1.0 - payload_high),
+            critical_risk,
         )
 
         abstention_score = _clip(
