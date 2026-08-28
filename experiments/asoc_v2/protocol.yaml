@@ -119,6 +119,17 @@ policy:
     polish: false
     workers: 1
     region: policy_validation_only
+    search_stage:
+      deterministic_evenly_spaced_rows: 3000
+      outcome_features_used_for_row_selection: false
+      purpose: propose_candidate_shortlist_only
+      shortlist_size: 12
+    certification_stage:
+      rows: full_policy_validation_region
+      message_seeds: all_declared_message_seeds
+      bootstrap_resamples_per_seed: 10000
+      candidate_feasible_only_if_every_seed_auc_ci_upper_at_or_below_budget: true
+      final_ranking: mean_payload_then_mean_completion_then_lower_max_auc_ci_upper_then_lower_mean_abstention
     tuned_parameters:
       - opportunity_entropy_weight
       - opportunity_payload_weight
@@ -132,7 +143,6 @@ policy:
     parameter_bounds:
       consequence_weights: [0.0, 1.0]
       stop_threshold: [0.80, 0.99]
-    final_selection: lexicographic_feasibility_then_payload_then_completion_then_lower_worst_auc_then_lower_abstention
     development_metrics_visible_to_optimizer: false
     final_holdout_metrics_visible_to_optimizer: false
   baselines:
@@ -147,7 +157,7 @@ policy:
 steganalysis:
   detector_auc_budget: 0.60
   primary_auc: adversarial_auc_max_of_auc_and_one_minus_auc
-  selection_rule: max_payload_with_validation_worst_eve_auc_ci_upper_at_or_below_budget
+  selection_rule: full_validation_certified_max_payload_with_every_seed_worst_eve_auc_ci_upper_at_or_below_budget
   design_eves:
     - linear
     - forest
