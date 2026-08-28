@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 
 from steganalysis.detectors import OrientedDetector, fit_detector, orient_detector
+from steganalysis.public_risk import observed_action_feature_vector
 from steganalysis.samples import FEATURE_COLUMNS
-from stego.coding import Candidate
 
 
 def make_actor_action_design_records(
@@ -20,16 +20,16 @@ def make_actor_action_design_records(
 ) -> pd.DataFrame:
     """Build balanced cover/stego records for actor-action design-Eves.
 
-    Each intensity is a separate causal replay.  With probability ``intensity``
+    Each intensity is a separate causal replay. With probability ``intensity``
     the reference generator samples an action from the current causal cover
     distribution Q; otherwise it leaves the observed natural carrier action
-    unchanged.  The stego history is always updated with the action actually
-    emitted.  Natural records are duplicated per intensity so the combined
+    unchanged. The stego history is always updated with the action actually
+    emitted. Natural records are duplicated per intensity so the combined
     binary detector sample remains balanced.
 
-    This generator is used only to train design-Eves.  It does not define the
-    proposed arithmetic policy and it never accesses policy-validation or test
-    regions.
+    This reference mixture is detector-unaware and deliberately independent of
+    the proposed arithmetic codec and fuzzy policy. It is used only to train
+    design-Eves and never accesses policy-validation or later regions.
     """
 
     required = {"source", "destination", "timestamp"}
@@ -83,7 +83,7 @@ def make_actor_action_design_records(
                     "source": str(source),
                     "label": 0,
                     "modified": False,
-                    **_feature(
+                    **_feature_dict(
                         model,
                         source=source,
                         previous=natural_prev,
@@ -100,7 +100,7 @@ def make_actor_action_design_records(
                     "source": str(source),
                     "label": 1,
                     "modified": modified,
-                    **_feature(
+                    **_feature_dict(
                         model,
                         source=source,
                         previous=stego_prev,
@@ -150,45 +150,31 @@ def fit_actor_action_design_eves(
     y_cal = calibration["label"].to_numpy(dtype=int)
 
     result: dict[str, OrientedDetector] = {}
-    for name in detector_names:
-        detector = fit_detector(name, x_fit, y_fit, seed=seed)
+    for offset, name in enumerate(detector_names):
+        detector = fit_detector(name, x_fit, y_fit, seed=seed + offset)
         result[name] = orient_detector(detector, x_cal, y_cal)
     return result
 
 
-def _feature(
+def _feature_dict(
     model: object,
     *,
     source: Hashable,
     previous: Hashable | None,
     action: Hashable,
-    candidates: Sequence[Candidate],
+    candidates: Sequence[object],
     gap: float,
 ) -> dict[str, float]:
-    probabilities = np.asarray([float(item.probability) for item in candidates], dtype=float)
-    probabilities /= probabilities.sum()
-    actions = [item.action for item in candidates]
-    if action in actions:
-        index = actions.index(action)
-        action_probability = float(probabilities[index])
-    else:
-        index = len(actions)
-        action_probability = float(max(probabilities.min() * 0.5, np.finfo(float).tiny))
-    entropy = float(
-        -(probabilities[probabilities > 0] * np.log2(probabilities[probabilities > 0])).sum()
+    vector = observed_action_feature_vector(
+        source=source,
+        action=action,
+        previous_action=previous,
+        candidates=candidates,
+        gap=gap,
+        context_seen=model.has_context(source, previous),
+        training_destinations=model.destinations,
     )
-    feature = {
-        "action_probability": action_probability,
-        "surprise_bits": -math.log2(max(action_probability, np.finfo(float).tiny)),
-        "rank_fraction": (index + 1) / max(1, len(actions)),
-        "is_top_action": float(index == 0),
-        "entropy_bits": entropy,
-        "top_probability": float(probabilities.max()),
-        "candidate_count": float(len(actions)),
-        "unseen_context": float(not model.has_context(source, previous)),
-        "unseen_destination": float(action not in model.destinations),
-        "same_as_previous": float(previous == action),
-        "self_loop": float(source == action),
-        "log_inter_event_gap": math.log1p(max(0.0, float(gap))),
+    return {
+        name: float(value)
+        for name, value in zip(FEATURE_COLUMNS, vector, strict=True)
     }
-    return {name: float(feature[name]) for name in FEATURE_COLUMNS}
