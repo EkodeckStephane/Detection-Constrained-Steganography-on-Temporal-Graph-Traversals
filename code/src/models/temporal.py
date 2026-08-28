@@ -81,6 +81,23 @@ class TemporalBackoffModel:
         normalized_previous = self._normalized_previous(previous_destination)
         return (source, normalized_previous) in self._context_counts
 
+    def context_observation_count(
+        self,
+        source: Hashable,
+        previous_destination: Hashable | None,
+    ) -> int:
+        """Number of cover-training observations supporting this exact context."""
+
+        normalized_previous = self._normalized_previous(previous_destination)
+        counts = self._context_counts.get((source, normalized_previous))
+        return 0 if counts is None else int(sum(counts.values()))
+
+    def source_observation_count(self, source: Hashable) -> int:
+        """Number of cover-training observations available for source-level backoff."""
+
+        counts = self._source_counts.get(source)
+        return 0 if counts is None else int(sum(counts.values()))
+
     def fit(self, frame: pd.DataFrame) -> TemporalBackoffModel:
         _require_columns(frame, ("source", "destination", "timestamp"))
         if frame.empty:
