@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import math
+
 import numpy as np
 import pytest
 
 from steganalysis.detectors import OrientedDetector
 from steganalysis.public_risk import (
     candidate_public_feature_matrix,
+    observed_action_feature_vector,
     public_reference_risk,
     public_state_risk_envelope,
     steganalysis_advantage,
@@ -113,3 +116,24 @@ def test_public_feature_matrix_matches_primary_eve_feature_contract() -> None:
     assert actions == ("B", "A")
     assert matrix.shape == (2, 12)
     assert np.isfinite(matrix).all()
+
+
+def test_observed_natural_action_outside_top_k_uses_locked_backoff_contract() -> None:
+    vector = observed_action_feature_vector(
+        source="actor",
+        action="natural-outside-top-k",
+        previous_action="previous",
+        candidates=[Candidate("top", 0.75), Candidate("second", 0.25)],
+        gap=3.0,
+        context_seen=True,
+        training_destinations={"top", "second"},
+    )
+
+    assert vector.shape == (12,)
+    assert vector[0] == pytest.approx(0.125)
+    assert vector[1] == pytest.approx(3.0)
+    assert vector[2] == pytest.approx(1.5)
+    assert vector[3] == pytest.approx(0.0)
+    assert vector[7] == pytest.approx(0.0)
+    assert vector[8] == pytest.approx(1.0)
+    assert vector[11] == pytest.approx(math.log1p(3.0))
