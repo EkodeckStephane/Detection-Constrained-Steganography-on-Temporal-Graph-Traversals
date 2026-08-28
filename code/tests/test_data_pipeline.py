@@ -9,7 +9,11 @@ import pyarrow.parquet as pq
 from data.adapters import read_geolife_plt, read_porto_csv, read_tdrive_directory
 from data.geolife_stream import stream_geolife_archive
 from data.schema import validate_events
-from data.splits import assign_causal_splits, assign_four_way_causal_splits
+from data.splits import (
+    assign_causal_splits,
+    assign_four_way_causal_splits,
+    assign_five_way_causal_splits,
+)
 from data.statistics import describe_temporal_events
 
 
@@ -62,6 +66,39 @@ def test_four_way_split_seals_final_region_and_preserves_timestamp_ties() -> Non
     assert split.loc[split["split"] == "eve_train", "timestamp"].min() > cutoffs.cover_train_end
     assert split.loc[split["split"] == "policy_validation", "timestamp"].min() > cutoffs.eve_train_end
     assert split.loc[split["split"] == "sealed_test", "timestamp"].min() > cutoffs.policy_validation_end
+
+
+def test_five_way_split_quarantines_development_test_and_reserves_final_holdout() -> None:
+    frame = pd.DataFrame(
+        {
+            "event_id": range(40),
+            "source": [index % 5 for index in range(40)],
+            "destination": [(index + 1) % 7 for index in range(40)],
+            "timestamp": list(range(39)) + [38],
+            "label": 0,
+            "sequence_id": pd.NA,
+        }
+    ).sort_values("timestamp", kind="stable").reset_index(drop=True)
+    validate_events(frame)
+    split, cutoffs = assign_five_way_causal_splits(
+        frame,
+        cover_train_fraction=0.50,
+        eve_train_fraction=0.15,
+        policy_validation_fraction=0.15,
+        development_test_fraction=0.05,
+    )
+
+    assert set(split["split"]) == {
+        "cover_train",
+        "eve_train",
+        "policy_validation",
+        "development_test",
+        "final_holdout",
+    }
+    assert split.groupby("timestamp")["split"].nunique().max() == 1
+    assert split.loc[split["split"] == "development_test", "timestamp"].min() > cutoffs.policy_validation_end
+    assert split.loc[split["split"] == "final_holdout", "timestamp"].min() > cutoffs.development_test_end
+    assert split.loc[split["split"] == "final_holdout", "timestamp"].max() == frame["timestamp"].max()
 
 
 def test_statistics_report_temporal_structure() -> None:
