@@ -6,6 +6,10 @@ from dataclasses import dataclass
 from stego.coding import Candidate
 
 
+PROBABILITY_MASS_BITS = 24
+PROBABILITY_MASS = 1 << PROBABILITY_MASS_BITS
+
+
 @dataclass(frozen=True)
 class ArithmeticState:
     low: int
@@ -166,6 +170,59 @@ def _rank_candidates(candidates: Iterable[Candidate]) -> list[Candidate]:
     return sorted(ranked, key=lambda item: (-item.probability, repr(item.action)))
 
 
+def _quantized_probability_weights(candidates: Sequence[Candidate]) -> dict[Hashable, int]:
+    """Map floating cover probabilities to a deterministic 24-bit integer mass.
+
+    Floating point is used only while values are of order ``2**24``. The
+    arithmetic interval itself may be ``2**128`` wide and is never multiplied by
+    a float. Every strictly positive candidate receives at least one mass unit,
+    then the remaining mass is distributed by Hamilton's largest-remainder
+    rule. This makes sender/receiver partitioning deterministic and removes the
+    precision loss caused by multiplying a binary64 probability by a 128-bit
+    interval width.
+    """
+
+    total_probability = float(sum(candidate.probability for candidate in candidates))
+    if total_probability <= 0.0:
+        raise ValueError("candidate probabilities must have positive mass")
+
+    positive = [candidate for candidate in candidates if candidate.probability > 0.0]
+    if len(positive) > PROBABILITY_MASS:
+        raise ValueError("probability mass precision cannot represent all positive candidates")
+
+    weights = {candidate.action: 0 for candidate in candidates}
+    if not positive:
+        raise ValueError("at least one candidate must have positive probability")
+
+    remaining_mass = PROBABILITY_MASS - len(positive)
+    raw_extra: dict[Hashable, float] = {}
+    integer_extra: dict[Hashable, int] = {}
+    for candidate in positive:
+        normalized = float(candidate.probability) / total_probability
+        raw = normalized * remaining_mass
+        base = int(raw)
+        raw_extra[candidate.action] = raw
+        integer_extra[candidate.action] = base
+        weights[candidate.action] = 1 + base
+
+    missing = PROBABILITY_MASS - sum(weights.values())
+    ranked_actions = sorted(
+        (candidate.action for candidate in positive),
+        key=lambda action: (
+            raw_extra[action] - integer_extra[action],
+            raw_extra[action],
+            repr(action),
+        ),
+        reverse=True,
+    )
+    for action in ranked_actions[:missing]:
+        weights[action] += 1
+
+    if sum(weights.values()) != PROBABILITY_MASS:
+        raise AssertionError("fixed probability mass does not sum to the public precision")
+    return weights
+
+
 def _partition_interval(
     candidates: Sequence[Candidate],
     low: int,
@@ -174,23 +231,24 @@ def _partition_interval(
     width = high - low
     if width <= 0:
         raise ValueError("interval width must be positive")
-    total_probability = sum(candidate.probability for candidate in candidates)
-    raw_widths = {
-        candidate.action: candidate.probability / total_probability * width
-        for candidate in candidates
-    }
-    integer_widths = {
-        action: int(value)
-        for action, value in raw_widths.items()
-    }
+
+    probability_weights = _quantized_probability_weights(candidates)
+    integer_widths: dict[Hashable, int] = {}
+    remainders: dict[Hashable, int] = {}
+    for candidate in candidates:
+        weight = probability_weights[candidate.action]
+        numerator = width * weight
+        integer_widths[candidate.action] = numerator // PROBABILITY_MASS
+        remainders[candidate.action] = numerator % PROBABILITY_MASS
+
     missing = width - sum(integer_widths.values())
-    remainders = {
-        action: raw_widths[action] - integer_widths[action]
-        for action in raw_widths
-    }
     sorted_actions = sorted(
-        raw_widths,
-        key=lambda action: (remainders[action], raw_widths[action], repr(action)),
+        (candidate.action for candidate in candidates),
+        key=lambda action: (
+            remainders[action],
+            probability_weights[action],
+            repr(action),
+        ),
         reverse=True,
     )
     for action in sorted_actions[:missing]:
