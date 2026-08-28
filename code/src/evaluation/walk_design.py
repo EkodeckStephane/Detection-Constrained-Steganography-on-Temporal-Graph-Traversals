@@ -53,15 +53,17 @@ def simulate_detector_unaware_walk(
     """Generate one paired natural/stego walk under a fixed embedding intensity.
 
     This routine is used to construct design-Eve traces before policy tuning.
-    It deliberately contains no fuzzy-policy signal.  Three independent random
+    It deliberately contains no fuzzy-policy signal. Three independent random
     streams are derived from public identifiers: payload bits, embedding
-    opportunities, and COVER/PAUSE continuations.  Consequently a variable
+    opportunities, and COVER/PAUSE continuations. Consequently a variable
     number of coder operations cannot shift the cover-continuation RNG.
 
-    Natural features are scored under the public likelihood Q at the observed
-    natural source.  Stego features are scored under Q at the actually emitted
-    source.  Arithmetic embedding is restricted to A(H_t), represented by
-    ``model.admissible_distribution``.
+    Natural features are scored under public likelihood Q at the observed
+    natural source. Stego features are scored under Q at the actually emitted
+    source. After divergence, arithmetic embedding and secret-independent COVER
+    sampling are restricted to A+(H_t), the cover-train-only sink-free viability
+    kernel. Before divergence, natural COVER passthrough remains exact even when
+    the natural state lies outside A+.
     """
 
     if not 0.0 <= intensity <= 1.0:
@@ -109,7 +111,7 @@ def simulate_detector_unaware_walk(
 
         natural_q = model.likelihood_distribution(observed_source)
         stego_q = model.likelihood_distribution(emitted_source)
-        admissible = model.admissible_distribution(emitted_source)
+        viable = model.viable_admissible_distribution(emitted_source)
 
         natural_feature = observed_action_feature_vector(
             source=observed_source,
@@ -123,11 +125,11 @@ def simulate_detector_unaware_walk(
 
         should_embed = bool(
             not encoder.complete
-            and len(admissible) >= 2
+            and len(viable) >= 2
             and opportunity_rng.random() < intensity
         )
         if should_embed:
-            support = rate_limited_candidates(admissible, nominal_bits=nominal_bits)
+            support = rate_limited_candidates(viable, nominal_bits=nominal_bits)
             emission = encoder.emit(support)
             decoder.observe(emission.action, support)
             stego_action = emission.action
@@ -139,7 +141,7 @@ def simulate_detector_unaware_walk(
                     observed_source=observed_source,
                     natural_action=natural_action,
                     emitted_source=emitted_source,
-                    admissible_candidates=admissible,
+                    admissible_candidates=viable,
                     cover_rng=cover_rng,
                 )
             except WalkDeadEndError:
