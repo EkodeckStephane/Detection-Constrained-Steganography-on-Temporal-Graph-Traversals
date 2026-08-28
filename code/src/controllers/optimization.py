@@ -13,6 +13,7 @@ from controllers.fuzzy import FuzzyWeights
 class FuzzyCandidate:
     weights: FuzzyWeights
     stop_threshold: float
+    embed_throttle: float = 1.0
 
 
 @dataclass(frozen=True)
@@ -21,7 +22,7 @@ class PolicyEvaluation:
 
     ``auc_ci_upper`` is the upper confidence bound of the worst oriented
     design-Eve AUC, where oriented AUC is max(AUC, 1-AUC). The optimizer never
-    receives sealed-test metrics.
+    receives development-test or final-holdout metrics.
     """
 
     payload_rate: float
@@ -53,14 +54,14 @@ Evaluator = Callable[[FuzzyCandidate], PolicyEvaluation]
 
 
 class DetectorConstrainedFuzzyOptimizer:
-    """Evolutionary tuning of Takagi--Sugeno consequence parameters.
+    """Evolutionary tuning of Takagi--Sugeno consequences and public thinning.
 
     Differential evolution proposes controller parameters using only the
-    policy-validation region. Every evaluation is cached, and the returned
-    operating point is chosen lexicographically from all evaluated candidates:
-    hard-gate feasibility first, then maximum payload rate, then completion,
-    lower adversarial AUC, and lower abstention. This keeps the scientific
-    selection rule explicit rather than hiding it in a weighted utility.
+    policy-validation region. ``embed_throttle`` is a secret-independent public
+    thinning probability applied only after the fuzzy controller declares an
+    event EMBED-eligible. Every evaluation is cached, and final selection is
+    lexicographic: hard-gate feasibility first, then maximum measured payload
+    rate, completion, lower adversarial AUC and lower abstention.
     """
 
     _WEIGHT_FIELDS = (
@@ -82,6 +83,7 @@ class DetectorConstrainedFuzzyOptimizer:
         population_size: int = 8,
         generations: int = 8,
         stop_threshold_bounds: tuple[float, float] = (0.80, 0.99),
+        embed_throttle_bounds: tuple[float, float] = (0.0, 1.0),
         cache_decimals: int = 6,
     ) -> None:
         if not 0.5 <= detector_auc_budget <= 1.0:
@@ -93,11 +95,15 @@ class DetectorConstrainedFuzzyOptimizer:
         low, high = stop_threshold_bounds
         if not 0 < low < high <= 1:
             raise ValueError("invalid stop-threshold bounds")
+        throttle_low, throttle_high = embed_throttle_bounds
+        if not 0.0 <= throttle_low < throttle_high <= 1.0:
+            raise ValueError("invalid embed-throttle bounds")
         self.detector_auc_budget = float(detector_auc_budget)
         self.seed = int(seed)
         self.population_size = int(population_size)
         self.generations = int(generations)
         self.stop_threshold_bounds = (float(low), float(high))
+        self.embed_throttle_bounds = (float(throttle_low), float(throttle_high))
         self.cache_decimals = int(cache_decimals)
 
     def optimize(self, evaluate: Evaluator) -> OptimizationResult:
@@ -116,7 +122,10 @@ class DetectorConstrainedFuzzyOptimizer:
             item = cache[key]
             return self._penalized_loss(item.evaluation)
 
-        bounds = [(0.0, 1.0)] * len(self._WEIGHT_FIELDS) + [self.stop_threshold_bounds]
+        bounds = (
+            [(0.0, 1.0)] * len(self._WEIGHT_FIELDS)
+            + [self.stop_threshold_bounds, self.embed_throttle_bounds]
+        )
         differential_evolution(
             objective,
             bounds=bounds,
@@ -142,15 +151,26 @@ class DetectorConstrainedFuzzyOptimizer:
         )
 
     def _candidate(self, vector: np.ndarray) -> FuzzyCandidate:
-        values = [float(np.clip(value, 0.0, 1.0)) for value in vector[:-1]]
+        expected = len(self._WEIGHT_FIELDS) + 2
+        if len(vector) != expected:
+            raise ValueError(f"expected {expected} optimization parameters")
+        values = [float(np.clip(value, 0.0, 1.0)) for value in vector[: len(self._WEIGHT_FIELDS)]]
         weights = FuzzyWeights(**dict(zip(self._WEIGHT_FIELDS, values, strict=True)))
+        stop_index = len(self._WEIGHT_FIELDS)
         return FuzzyCandidate(
             weights=weights,
             stop_threshold=float(
                 np.clip(
-                    vector[-1],
+                    vector[stop_index],
                     self.stop_threshold_bounds[0],
                     self.stop_threshold_bounds[1],
+                )
+            ),
+            embed_throttle=float(
+                np.clip(
+                    vector[stop_index + 1],
+                    self.embed_throttle_bounds[0],
+                    self.embed_throttle_bounds[1],
                 )
             ),
         )
