@@ -7,6 +7,26 @@ from controllers.fuzzy import ControllerInputs
 from stego.coding import Candidate
 
 
+def effective_backoff_observation_count(
+    model: object,
+    source: Hashable,
+    previous_destination: Hashable | None,
+) -> int:
+    """Return training evidence at the finest backoff level actually available.
+
+    Exact actor-history evidence is preferred.  If that context is unseen but
+    the source itself was observed, the temporal model backs off to its
+    source-level distribution, so source-level observations are the relevant
+    calibration evidence.  A completely unseen source returns zero; global
+    sample size is deliberately not used to erase cold-start uncertainty.
+    """
+
+    context_count = int(model.context_observation_count(source, previous_destination))
+    if context_count > 0:
+        return context_count
+    return int(model.source_observation_count(source))
+
+
 def build_public_controller_inputs(
     *,
     candidates: Sequence[Candidate],
@@ -20,20 +40,24 @@ def build_public_controller_inputs(
 ) -> ControllerInputs:
     """Build secret-independent Takagi--Sugeno inputs from public evidence.
 
-    The mapping is fixed before policy optimization:
+    ``context_observations`` is the effective cover-training evidence at the
+    finest backoff level actually used by the cover model.  Callers should use
+    :func:`effective_backoff_observation_count` for the primary temporal model.
 
-    - predictive entropy is Shannon entropy normalized by log2(top_k);
-    - calibration uncertainty is 1 for unseen contexts and otherwise
-      1/sqrt(1+n), where n is the cover-training context count;
-    - steganalysis risk is the frozen public design-Eve risk supplied by the
-      caller;
-    - payload pressure is the uncommitted fraction of the public message;
-    - dead-end risk is the candidate probability mass leading to states with
-      no admissible continuation (zero for domains without such a callback);
-    - channel fragility is one minus normalized log-support size.
+    The fixed mappings are:
 
-    No quantity depends on payload bit values or on the secret-dependent action
-    selected by the arithmetic coder.
+    - predictive entropy: Shannon entropy normalized by log2(top_k);
+    - calibration uncertainty: 1/sqrt(1+n_eff), with n_eff=0 giving 1;
+    - steganalysis risk: the frozen public design-Eve risk supplied by caller;
+    - payload pressure: the uncommitted fraction of the public message;
+    - dead-end risk: candidate probability mass leading to states with no
+      admissible continuation;
+    - channel fragility: inverse admissible support size, so a singleton is 1,
+      two alternatives are 0.5, and broad support rapidly approaches zero.
+
+    ``context_seen`` remains explicit for provenance/API compatibility but does
+    not override source-level backoff evidence.  No quantity depends on payload
+    bit values or on the secret-dependent arithmetic action.
     """
 
     if not candidates:
@@ -46,6 +70,7 @@ def build_public_controller_inputs(
         raise ValueError("payload_length must be positive")
     if not 0 <= committed_payload_bits <= payload_length:
         raise ValueError("committed_payload_bits must lie within the public payload")
+    del context_seen
 
     probabilities = [max(0.0, float(item.probability)) for item in candidates]
     mass = sum(probabilities)
@@ -57,9 +82,7 @@ def build_public_controller_inputs(
     entropy_scale = max(1.0, math.log2(top_k))
     predictive_entropy = _clip(entropy / entropy_scale)
 
-    calibration_uncertainty = 1.0 if not context_seen else _clip(
-        1.0 / math.sqrt(1.0 + context_observations)
-    )
+    calibration_uncertainty = _clip(1.0 / math.sqrt(1.0 + context_observations))
     payload_pressure = _clip(
         (payload_length - committed_payload_bits) / payload_length
     )
@@ -75,10 +98,8 @@ def build_public_controller_inputs(
             )
         )
 
-    support_size = min(len(candidates), top_k)
-    channel_fragility = _clip(
-        1.0 - math.log2(max(1, support_size)) / math.log2(top_k)
-    )
+    support_size = max(1, min(len(candidates), top_k))
+    channel_fragility = _clip(1.0 / support_size)
 
     return ControllerInputs(
         predictive_entropy=predictive_entropy,
