@@ -37,13 +37,7 @@ class PublicReferenceRisk:
 
 
 def steganalysis_advantage(score: float | np.ndarray) -> float | np.ndarray:
-    """Map an oriented stego posterior to normalized advantage above chance.
-
-    Oriented detector scores are constructed so larger values indicate stego.
-    A score at or below 0.5 supplies no positive steganalytic evidence, while a
-    score of 1 represents maximal evidence. This scale matches fuzzy membership
-    functions whose zero means no risk rather than chance-level classification.
-    """
+    """Map an oriented stego posterior to normalized advantage above chance."""
 
     values = np.asarray(score, dtype=float)
     transformed = np.clip(2.0 * (values - 0.5), 0.0, 1.0)
@@ -63,39 +57,66 @@ def candidate_public_feature_matrix(
 ) -> tuple[np.ndarray, tuple[Hashable, ...]]:
     """Build Eve-visible features for every admissible candidate action."""
 
-    if not candidates:
-        raise ValueError("at least one admissible candidate is required")
-    probabilities = np.asarray([float(item.probability) for item in candidates], dtype=float)
-    if np.any(probabilities < 0) or float(probabilities.sum()) <= 0:
-        raise ValueError("candidate probabilities must contain positive non-negative mass")
-    probabilities = probabilities / probabilities.sum()
-    entropy = float(-(probabilities[probabilities > 0] * np.log2(probabilities[probabilities > 0])).sum())
-    top_probability = float(probabilities.max())
-    count = len(candidates)
-    log_gap = math.log1p(max(0.0, float(gap)))
+    normalized = _normalized_candidates(candidates)
+    rows = [
+        observed_action_feature_vector(
+            source=source,
+            action=candidate.action,
+            previous_action=previous_action,
+            candidates=normalized,
+            gap=gap,
+            context_seen=context_seen,
+            training_destinations=training_destinations,
+        )
+        for candidate in normalized
+    ]
+    return np.vstack(rows), tuple(candidate.action for candidate in normalized)
 
-    rows: list[list[float]] = []
-    actions: list[Hashable] = []
-    for index, (candidate, probability) in enumerate(zip(candidates, probabilities, strict=True)):
-        action = candidate.action
-        rank = index + 1
-        feature = {
-            "action_probability": float(probability),
-            "surprise_bits": -math.log2(max(float(probability), np.finfo(float).tiny)),
-            "rank_fraction": rank / count,
-            "is_top_action": float(rank == 1),
-            "entropy_bits": entropy,
-            "top_probability": top_probability,
-            "candidate_count": float(count),
-            "unseen_context": float(not context_seen),
-            "unseen_destination": float(action not in training_destinations),
-            "same_as_previous": float(previous_action == action),
-            "self_loop": float(source == action),
-            "log_inter_event_gap": log_gap,
-        }
-        rows.append([float(feature[name]) for name in FEATURE_COLUMNS])
-        actions.append(action)
-    return np.asarray(rows, dtype=float), tuple(actions)
+
+def observed_action_feature_vector(
+    *,
+    source: Hashable,
+    action: Hashable,
+    previous_action: Hashable | None,
+    candidates: Sequence[Candidate],
+    gap: float,
+    context_seen: bool,
+    training_destinations: frozenset[Hashable] | set[Hashable],
+) -> np.ndarray:
+    """Return the canonical 12 public Eve features for an observed action.
+
+    The action may be outside the learned top-k candidate list. This is needed
+    for actor-action COVER/PAUSE, where the observed natural destination is
+    passed through even when Q assigns it only backoff mass outside top-k. The
+    fallback probability and rank convention exactly matches the paired-sample
+    feature contract: half the smallest retained probability and rank k+1.
+    """
+
+    normalized = _normalized_candidates(candidates)
+    probabilities = {candidate.action: float(candidate.probability) for candidate in normalized}
+    ranked_actions = [candidate.action for candidate in normalized]
+    count = len(normalized)
+    minimum_probability = min(probabilities.values())
+    probability = probabilities.get(action, minimum_probability * 0.5)
+    rank = ranked_actions.index(action) + 1 if action in ranked_actions else count + 1
+    values = np.asarray(list(probabilities.values()), dtype=float)
+    entropy = float(-(values[values > 0] * np.log2(values[values > 0])).sum())
+
+    feature = {
+        "action_probability": float(probability),
+        "surprise_bits": -math.log2(max(float(probability), np.finfo(float).tiny)),
+        "rank_fraction": rank / count,
+        "is_top_action": float(rank == 1),
+        "entropy_bits": entropy,
+        "top_probability": float(values.max()),
+        "candidate_count": float(count),
+        "unseen_context": float(not context_seen),
+        "unseen_destination": float(action not in training_destinations),
+        "same_as_previous": float(previous_action == action),
+        "self_loop": float(source == action),
+        "log_inter_event_gap": math.log1p(max(0.0, float(gap))),
+    }
+    return np.asarray([float(feature[name]) for name in FEATURE_COLUMNS], dtype=float)
 
 
 def public_reference_risk(
@@ -158,3 +179,16 @@ def public_state_risk_envelope(
         action_risks=action_risks,
         candidate_count=len(actions),
     )
+
+
+def _normalized_candidates(candidates: Sequence[Candidate]) -> list[Candidate]:
+    if not candidates:
+        raise ValueError("at least one admissible candidate is required")
+    probabilities = np.asarray([float(item.probability) for item in candidates], dtype=float)
+    if np.any(probabilities < 0) or float(probabilities.sum()) <= 0:
+        raise ValueError("candidate probabilities must contain positive non-negative mass")
+    probabilities = probabilities / probabilities.sum()
+    return [
+        Candidate(item.action, float(probability))
+        for item, probability in zip(candidates, probabilities, strict=True)
+    ]
