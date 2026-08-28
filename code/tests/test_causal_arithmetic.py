@@ -1,6 +1,15 @@
 from __future__ import annotations
 
-from stego.causal_arithmetic import CausalArithmeticDecoder, CausalArithmeticEncoder
+import numpy as np
+
+from stego.causal_arithmetic import (
+    CausalArithmeticDecoder,
+    CausalArithmeticEncoder,
+    PROBABILITY_MASS,
+    _partition_interval,
+    _quantized_probability_weights,
+    _rank_candidates,
+)
 from stego.coding import Candidate
 
 
@@ -83,3 +92,49 @@ def test_candidate_mismatch_is_exposed_instead_of_hidden_by_oracle_widths() -> N
         assert "not decodable" in str(exc)
     else:
         raise AssertionError("Bob must reject a mismatched causal candidate set")
+
+
+def test_128_bit_partition_uses_exact_integer_width_arithmetic() -> None:
+    candidates = _rank_candidates(
+        [
+            Candidate("dominant", 0.9999990),
+            Candidate("tiny-a", 0.0000001),
+            Candidate("tiny-b", 0.0000002),
+            Candidate("tiny-c", 0.0000007),
+        ]
+    )
+    weights = _quantized_probability_weights(candidates)
+    assert sum(weights.values()) == PROBABILITY_MASS
+    assert all(weights[item.action] > 0 for item in candidates)
+
+    parent_high = 1 << 128
+    intervals = _partition_interval(candidates, 0, parent_high)
+    assert intervals[0][1] == 0
+    assert intervals[-1][2] == parent_high
+    assert all(high > low for _, low, high in intervals)
+    assert sum(high - low for _, low, high in intervals) == parent_high
+
+
+def test_random_skewed_128_bit_distributions_decode_without_drift() -> None:
+    rng = np.random.default_rng(20260828)
+    payload = rng.integers(0, 2, size=32).astype(int).tolist()
+    alice = CausalArithmeticEncoder(payload, precision_bits=128)
+    bob = CausalArithmeticDecoder(payload_length=len(payload), precision_bits=128)
+
+    for step in range(256):
+        if alice.complete:
+            break
+        raw = rng.lognormal(mean=0.0, sigma=5.0, size=12)
+        raw = raw / raw.sum()
+        candidates = [
+            Candidate(f"step-{step}:action-{index}", float(probability))
+            for index, probability in enumerate(raw)
+        ]
+        emission = alice.emit(candidates)
+        bob.observe(emission.action, candidates)
+        assert alice.state == bob.state
+        assert alice.committed_prefix_bits == bob.committed_prefix_bits
+
+    assert alice.complete
+    assert bob.complete
+    assert bob.decoded_payload() == payload
