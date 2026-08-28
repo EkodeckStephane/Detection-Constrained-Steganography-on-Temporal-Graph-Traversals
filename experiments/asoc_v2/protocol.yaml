@@ -56,13 +56,13 @@ datasets:
   - id: geolife_cells
     transition_semantics: walk
     cover_history_mode: walk_source
-    admissibility: observed_outgoing_only
-    cover_pause_emission: preserve_observed_natural_before_divergence_then_sample_secret_independent_continuation_from_current_admissible_cover_distribution
+    admissibility: observed_outgoing_sink_free_viability_kernel_learned_only_from_cover_train
+    cover_pause_emission: preserve_observed_natural_before_divergence_then_sample_secret_independent_continuation_from_current_viable_cover_distribution
   - id: t_drive_cells
     transition_semantics: walk
     cover_history_mode: walk_source
-    admissibility: observed_outgoing_only
-    cover_pause_emission: preserve_observed_natural_before_divergence_then_sample_secret_independent_continuation_from_current_admissible_cover_distribution
+    admissibility: observed_outgoing_sink_free_viability_kernel_learned_only_from_cover_train
+    cover_pause_emission: preserve_observed_natural_before_divergence_then_sample_secret_independent_continuation_from_current_viable_cover_distribution
 
 sampling:
   row_policy: chronological
@@ -92,6 +92,14 @@ cover_model:
   primary: temporal_backoff_restricted_to_admissible_support
   prior_strength: 8.0
   top_k: 32
+  walk:
+    likelihood_q: source_conditional_cover_model_with_global_cold_start_backoff
+    base_support_a: outgoing_edges_observed_only_in_cover_train
+    controllable_support_a_plus: greatest_outgoing_viability_kernel_computed_only_from_cover_train
+    viability_property: every_state_in_a_plus_has_at_least_one_observed_successor_in_a_plus
+    predictive_entropy_scale: weighted_q95_shannon_entropy_on_a_plus_using_cover_train_source_frequency_only
+    entropy_scale_quantile: 0.95
+    dead_end_risk_input: probability_mass_in_base_a_removed_by_a_plus
   diagnostics:
     - gru
     - transformer
@@ -106,7 +114,7 @@ policy:
   stop_semantics: terminate_current_covert_session_then_follow_valid_cover_continuations
   pause_semantics: emit_valid_cover_continuation_without_consuming_payload
   actor_action_cover_semantics: preserve_observed_natural_action_when_not_embedding
-  walk_cover_semantics: preserve_observed_natural_before_divergence_then_sample_valid_cover_continuation_from_current_emitted_state
+  walk_cover_semantics: preserve_observed_natural_before_divergence_then_sample_from_cover_train_only_a_plus_after_divergence
   primary: optimized_takagi_sugeno
   steganalysis_risk_input: chance_referenced_public_top_cover_design_eve_advantage
   steganalysis_risk_transform: max_0_2_times_oriented_stego_posterior_minus_0_5
@@ -166,6 +174,7 @@ steganalysis:
     - 0.20
     - 0.50
     - 1.00
+  walk_intensity_assignment: sha256_seed_and_sequence_id_one_intensity_per_complete_walk_unit
   score_orientation: frozen_on_eve_train_orientation_calibration_block
   risk_aggregation: maximum_oriented_score_across_design_eves
   controller_risk_mapping: chance_referenced_advantage_zero_at_posterior_0_5
@@ -203,6 +212,7 @@ metrics:
     - passive_decode_success_rate
     - passive_state_mismatch_rate
     - invalid_transition_rate
+    - post_divergence_dead_end_rate
   detection:
     - auc
     - adversarial_auc
@@ -225,6 +235,7 @@ hard_gates:
   passive_state_mismatch_rate: 0.0
   passive_decode_success_rate: 1.0
   invalid_transition_rate: 0.0
+  post_divergence_dead_end_rate: 0.0
   final_holdout_may_change_policy: false
   final_holdout_may_change_baseline_hyperparameters: false
 
