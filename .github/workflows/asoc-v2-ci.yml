@@ -35,7 +35,9 @@ jobs:
         run: |
           pytest -q \
             tests/test_steganalysis_samples.py \
+            tests/test_design_mixture.py \
             tests/test_temporal_model.py \
+            tests/test_controller_inputs.py \
             tests/test_data_pipeline.py \
             tests/test_admissibility.py \
             tests/test_asoc_cover.py \
