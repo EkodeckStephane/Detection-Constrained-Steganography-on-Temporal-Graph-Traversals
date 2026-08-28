@@ -6,7 +6,12 @@ import zipfile
 import pandas as pd
 import pyarrow.parquet as pq
 
-from data.adapters import read_geolife_plt, read_porto_csv, read_tdrive_directory
+from data.adapters import (
+    read_bipartite_interactions,
+    read_geolife_plt,
+    read_porto_csv,
+    read_tdrive_directory,
+)
 from data.geolife_stream import stream_geolife_archive
 from data.schema import validate_events
 from data.splits import (
@@ -118,6 +123,26 @@ def test_statistics_report_temporal_structure() -> None:
     assert stats["repeated_edge_fraction"] > 0
     assert stats["conditional_destination_entropy_bits"] >= 0
     assert set(stats["split_counts"]) == {"train", "validation", "test"}
+
+
+def test_bipartite_adapter_reads_exact_design_prefix_only(tmp_path: Path) -> None:
+    source = tmp_path / "interactions.csv"
+    source.write_text(
+        "user,item,timestamp,label,feature\n"
+        "1,10,1,0,a\n"
+        "1,11,2,0,b\n"
+        "2,10,3,0,c\n"
+        "2,12,4,0,DEVELOPMENT\n"
+        "3,13,5,0,FINAL_HOLDOUT\n",
+        encoding="utf-8",
+    )
+
+    frame = read_bipartite_interactions(source, nrows=3, chunksize=2)
+
+    assert len(frame) == 3
+    assert frame["timestamp"].tolist() == [1, 2, 3]
+    assert frame["source"].tolist() == ["user:1", "user:1", "user:2"]
+    assert frame["destination"].tolist() == ["item:10", "item:11", "item:10"]
 
 
 def test_tdrive_adapter(tmp_path: Path) -> None:
