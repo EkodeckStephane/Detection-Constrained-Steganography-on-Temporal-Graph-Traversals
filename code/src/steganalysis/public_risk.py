@@ -13,7 +13,7 @@ from stego.coding import Candidate
 
 @dataclass(frozen=True)
 class PublicRiskEnvelope:
-    """Secret-independent detectability risk attached to one public state."""
+    """Secret-independent detectability advantage attached to one public state."""
 
     worst_risk: float
     action_risks: tuple[tuple[Hashable, float], ...]
@@ -22,18 +22,34 @@ class PublicRiskEnvelope:
 
 @dataclass(frozen=True)
 class PublicReferenceRisk:
-    """Risk of a deterministic public reference action under frozen design-Eves.
+    """Detectability advantage of a deterministic public reference action.
 
     The primary ASOC V2 controller uses the top-probability cover action as a
-    low-cost, secret-independent state-risk proxy. Security is *not* inferred
-    from this proxy: every frozen policy is still certified using detector AUC
-    on the actions it actually emits. The full worst-action envelope remains
-    available as a conservative sensitivity analysis.
+    low-cost, secret-independent state-risk proxy. The underlying oriented Eve
+    posterior is converted to advantage above chance: 0.5 -> 0 risk, 1 -> 1
+    risk. Security is not inferred from this proxy: every frozen policy is
+    certified using adversarial AUC on the actions it actually emits.
     """
 
     action: Hashable
     risk: float
     candidate_count: int
+
+
+def steganalysis_advantage(score: float | np.ndarray) -> float | np.ndarray:
+    """Map an oriented stego posterior to normalized advantage above chance.
+
+    Oriented detector scores are constructed so larger values indicate stego.
+    A score at or below 0.5 supplies no positive steganalytic evidence, while a
+    score of 1 represents maximal evidence. This scale matches fuzzy membership
+    functions whose zero means no risk rather than chance-level classification.
+    """
+
+    values = np.asarray(score, dtype=float)
+    transformed = np.clip(2.0 * (values - 0.5), 0.0, 1.0)
+    if np.ndim(score) == 0:
+        return float(transformed)
+    return transformed
 
 
 def candidate_public_feature_matrix(
@@ -45,13 +61,7 @@ def candidate_public_feature_matrix(
     context_seen: bool,
     training_destinations: frozenset[Hashable] | set[Hashable],
 ) -> tuple[np.ndarray, tuple[Hashable, ...]]:
-    """Build Eve-visible features for every admissible candidate action.
-
-    The matrix depends only on state shared by Alice and Bob: current source,
-    previous emitted action, current admissible candidate distribution, timing,
-    and cover-model training support. It never depends on payload bits or on the
-    action that an encoder would select for those bits.
-    """
+    """Build Eve-visible features for every admissible candidate action."""
 
     if not candidates:
         raise ValueError("at least one admissible candidate is required")
@@ -108,7 +118,8 @@ def public_reference_risk(
         context_seen=context_seen,
         training_destinations=training_destinations,
     )
-    risks = worst_case_design_risk(detectors, matrix[:1])
+    scores = worst_case_design_risk(detectors, matrix[:1])
+    risks = steganalysis_advantage(scores)
     return PublicReferenceRisk(
         action=actions[0],
         risk=float(risks[0]),
@@ -126,12 +137,7 @@ def public_state_risk_envelope(
     context_seen: bool,
     training_destinations: frozenset[Hashable] | set[Hashable],
 ) -> PublicRiskEnvelope:
-    """Return the conservative maximum design-Eve risk for a public state.
-
-    Risk is maximized first over frozen design-Eves for each action, then over
-    all currently admissible actions. Therefore Alice and Bob obtain exactly
-    the same value before any secret-dependent action selection occurs.
-    """
+    """Return conservative maximum detectability advantage for a public state."""
 
     matrix, actions = candidate_public_feature_matrix(
         source=source,
@@ -141,7 +147,8 @@ def public_state_risk_envelope(
         context_seen=context_seen,
         training_destinations=training_destinations,
     )
-    action_risk_values = worst_case_design_risk(detectors, matrix)
+    action_scores = worst_case_design_risk(detectors, matrix)
+    action_risk_values = np.asarray(steganalysis_advantage(action_scores), dtype=float)
     action_risks = tuple(
         (action, float(risk))
         for action, risk in zip(actions, action_risk_values, strict=True)
