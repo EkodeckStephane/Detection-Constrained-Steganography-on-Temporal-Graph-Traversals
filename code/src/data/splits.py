@@ -171,7 +171,7 @@ def assign_five_way_causal_splits(
     cover_train_fraction: float = 0.55,
     eve_train_fraction: float = 0.15,
     policy_validation_fraction: float = 0.15,
-    development_test_fraction: float = 0.05,
+    development_test_fraction: float = 0.10,
 ) -> tuple[pd.DataFrame, FiveWayTemporalCutoffs]:
     """Create a fresh publication holdout after pilot-inspected observations.
 
@@ -180,14 +180,15 @@ def assign_five_way_causal_splits(
     - ``cover_train`` fits the cover model;
     - ``eve_train`` fits and orients design-Eves;
     - ``policy_validation`` tunes and freezes the controller;
-    - ``development_test`` contains the early post-validation region that may
-      be inspected during engineering diagnostics;
+    - ``development_test`` quarantines the early post-validation region that
+      may have been inspected during engineering diagnostics;
     - ``final_holdout`` is the untouched publication test and must not affect
       any model, detector, threshold, controller, baseline or narrative choice.
 
-    The default 55/15/15/5/10 allocation preserves the original 55/15/15
-    design regions while quarantining the pilot-accessible start of the old
-    15% test block and reserving its last 10% for final evaluation.
+    The default 55/15/15/10/5 allocation preserves the original 55/15/15
+    design regions while conservatively quarantining the first ten percentage
+    points of the old test block and reserving only its last five percentage
+    points for final publication evaluation.
     """
 
     if frame.empty:
