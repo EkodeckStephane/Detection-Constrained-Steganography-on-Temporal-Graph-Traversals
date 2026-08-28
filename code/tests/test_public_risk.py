@@ -8,12 +8,13 @@ from steganalysis.public_risk import (
     candidate_public_feature_matrix,
     public_reference_risk,
     public_state_risk_envelope,
+    steganalysis_advantage,
 )
 from stego.coding import Candidate
 
 
 class _ProbabilityRiskDetector:
-    """Use action probability itself as a deterministic public risk score."""
+    """Use action probability itself as a deterministic public score."""
 
     def predict_proba(self, x: np.ndarray) -> np.ndarray:
         score = np.clip(x[:, 0], 0.0, 1.0)
@@ -30,6 +31,13 @@ def _detectors() -> dict[str, OrientedDetector]:
     }
 
 
+def test_steganalysis_advantage_uses_chance_as_zero_risk() -> None:
+    assert steganalysis_advantage(0.20) == pytest.approx(0.0)
+    assert steganalysis_advantage(0.50) == pytest.approx(0.0)
+    assert steganalysis_advantage(0.60) == pytest.approx(0.20)
+    assert steganalysis_advantage(1.00) == pytest.approx(1.0)
+
+
 def test_public_risk_depends_on_state_candidates_not_payload_bits() -> None:
     candidates = [Candidate("B", 0.7), Candidate("C", 0.2), Candidate("D", 0.1)]
 
@@ -42,8 +50,6 @@ def test_public_risk_depends_on_state_candidates_not_payload_bits() -> None:
         context_seen=True,
         training_destinations={"B", "C", "D"},
     )
-    # Calling the same public state again represents a different secret message:
-    # no payload argument exists, so the risk must be identical by construction.
     second = public_state_risk_envelope(
         _detectors(),
         source="A",
@@ -55,7 +61,7 @@ def test_public_risk_depends_on_state_candidates_not_payload_bits() -> None:
     )
 
     assert first == second
-    assert first.worst_risk == pytest.approx(0.7)
+    assert first.worst_risk == pytest.approx(0.4)
     assert first.candidate_count == 3
 
 
@@ -73,7 +79,7 @@ def test_primary_reference_risk_uses_deterministic_top_cover_action() -> None:
     )
 
     assert result.action == "B"
-    assert result.risk == pytest.approx(0.55)
+    assert result.risk == pytest.approx(0.10)
     assert result.candidate_count == 2
 
 
@@ -90,8 +96,8 @@ def test_public_risk_envelope_keeps_worst_admissible_action_for_sensitivity() ->
         training_destinations={"B", "C"},
     )
 
-    assert result.worst_risk == pytest.approx(0.55)
-    assert dict(result.action_risks) == pytest.approx({"B": 0.55, "C": 0.45})
+    assert result.worst_risk == pytest.approx(0.10)
+    assert dict(result.action_risks) == pytest.approx({"B": 0.10, "C": 0.0})
 
 
 def test_public_feature_matrix_matches_primary_eve_feature_contract() -> None:
