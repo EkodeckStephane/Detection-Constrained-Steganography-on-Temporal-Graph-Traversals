@@ -1,5 +1,5 @@
 campaign: asoc_v2_causal_detector_constrained_control
-status: design_only_until_sealed_freeze
+status: final_holdout_reserved_not_opened
 
 scientific_object:
   state_recursion: emitted_action
@@ -11,44 +11,44 @@ splits:
     cover_train: 0.55
     eve_train: 0.15
     policy_validation: 0.15
-    sealed_test: 0.15
+    development_test: 0.10
+    final_holdout: 0.05
   preserve_timestamp_ties: true
   preserve_whole_sequences_or_sessions: true
   boundary_policy: choose_causal_sequence_safe_boundaries_nearest_target_fractions
   report_effective_fractions: true
+  development_test_role: quarantine_pilot_accessible_post_validation_region_and_permit_engineering_diagnostics_before_final_freeze
+  final_holdout_role: untouched_publication_test_never_used_for_model_detector_threshold_policy_baseline_or_narrative_selection
   eve_train_internal_split:
     detector_fit_fraction: 0.75
     orientation_calibration_fraction: 0.25
     chronological: true
     preserve_timestamp_ties: true
     policy_validation_access: false
-    sealed_test_access: false
+    development_test_access: false
+    final_holdout_access: false
   t_drive:
     rationale: sessions_do_not_cross_midnight_and_intra_day_quantile_cuts_discard_too_many_sessions
-    fixed_day_end_boundaries_utc:
+    design_day_end_boundaries_utc:
       - '2008-02-05T23:59:59Z'
       - '2008-02-06T23:59:59Z'
       - '2008-02-07T23:59:59Z'
-    effective_point_fractions:
-      cover_train: 0.6153394870958454
-      eve_train: 0.14407173676628615
-      policy_validation: 0.137354843489793
-      sealed_test: 0.10323393264807543
+    final_boundary: session_safe_boundary_inside_2008_02_08_to_reserve_last_five_percent_of_all_points
     boundary_quarantine_sessions: 0
 
 datasets:
   - id: tgbl-wiki
     transition_semantics: actor_action
     cover_history_mode: actor_history
-    admissibility: observed_outgoing_with_global_catalog_for_unseen_actor
+    admissibility: public_catalog_with_probabilities_learned_only_from_cover_train
   - id: mooc
     transition_semantics: actor_action
     cover_history_mode: actor_history
-    admissibility: observed_outgoing_with_global_catalog_for_unseen_actor
+    admissibility: public_catalog_with_probabilities_learned_only_from_cover_train
   - id: lastfm
     transition_semantics: actor_action
     cover_history_mode: actor_history
-    admissibility: observed_outgoing_with_global_catalog_for_unseen_actor
+    admissibility: public_catalog_with_probabilities_learned_only_from_cover_train
   - id: geolife_cells
     transition_semantics: walk
     cover_history_mode: walk_source
@@ -67,6 +67,21 @@ sampling:
     - 50000
     - null
 
+communication_session:
+  payload_type: encrypted_near_uniform_bits
+  primary_payload_bits: 32
+  sensitivity_payload_bits:
+    - 16
+    - 64
+  arithmetic_precision_bits: 128
+  actor_action_unit: one_session_per_source_per_evaluation_region
+  walk_unit: one_session_per_trajectory_or_mobility_session
+  restart_after_completion_within_unit: false
+  restart_after_stop_within_unit: false
+  after_completion_or_stop: follow_cover_without_consuming_payload
+  rate_measurement: committed_arithmetic_prefix_gain_divided_by_observed_transitions
+  nominal_controller_bits_are_not_reported_as_committed_payload
+
 cover_model:
   primary: temporal_backoff_restricted_to_admissible_support
   prior_strength: 8.0
@@ -82,10 +97,10 @@ policy:
     - COVER
     - PAUSE
     - STOP
-  stop_semantics: terminate_covert_session_then_follow_valid_cover_continuations
+  stop_semantics: terminate_current_covert_session_then_follow_valid_cover_continuations
   pause_semantics: emit_valid_cover_continuation_without_consuming_payload
   primary: optimized_takagi_sugeno
-  steganalysis_risk_input: maximum_oriented_design_eve_score
+  steganalysis_risk_input: public_top_cover_reference_risk_from_maximum_oriented_design_eve_score
   optimization:
     algorithm: differential_evolution
     implementation: scipy.optimize.differential_evolution
@@ -109,11 +124,12 @@ policy:
       consequence_weights: [0.0, 1.0]
       stop_threshold: [0.80, 0.99]
     final_selection: lexicographic_feasibility_then_payload_then_completion_then_lower_worst_auc_then_lower_abstention
-    sealed_metrics_visible_to_optimizer: false
+    development_metrics_visible_to_optimizer: false
+    final_holdout_metrics_visible_to_optimizer: false
   baselines:
     - fixed_entropy_threshold
     - hand_tuned_fuzzy
-    - detector_unaware_range
+    - detector_unaware_causal_arithmetic
     - random_admissible
     - coupling_inspired_distribution_preserving
   optional_reference:
@@ -139,7 +155,8 @@ steganalysis:
     - transformer_sequence
     - temporal_gnn
     - white_box_diagnostic
-  test_policy: sealed_once_frozen
+  unseen_eve_rule: trained_after_policy_freeze_without_policy_feedback_and_evaluated_only_on_final_holdout
+  final_test_policy: open_final_holdout_once_after_freeze_manifest_verification
 
 uncertainty:
   bootstrap_resamples: 10000
@@ -188,7 +205,8 @@ hard_gates:
   passive_state_mismatch_rate: 0.0
   passive_decode_success_rate: 1.0
   invalid_transition_rate: 0.0
-  sealed_test_may_change_policy: false
+  final_holdout_may_change_policy: false
+  final_holdout_may_change_baseline_hyperparameters: false
 
 provenance:
   output_root: results_final
@@ -196,3 +214,6 @@ provenance:
   require_config_sha256: true
   require_dataset_manifest_sha256: true
   require_seed_record: true
+  require_frozen_policy_sha256: true
+  require_design_results_sha256: true
+  require_freeze_manifest_fingerprint: true
