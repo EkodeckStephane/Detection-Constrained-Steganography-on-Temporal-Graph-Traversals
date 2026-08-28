@@ -39,6 +39,7 @@ jobs:
             tests/test_data_pipeline.py \
             tests/test_admissibility.py \
             tests/test_asoc_cover.py \
+            tests/test_cover_semantics.py \
             tests/test_sealed_selection.py \
             tests/test_final_holdout.py \
             tests/test_auc_bootstrap.py \
