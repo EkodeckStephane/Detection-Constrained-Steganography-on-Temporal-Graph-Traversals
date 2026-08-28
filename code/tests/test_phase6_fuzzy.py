@@ -63,6 +63,23 @@ def test_fuzzy_controller_stops_at_dead_end() -> None:
     assert decision.mode == "STOP"
 
 
+def test_low_payload_pressure_cannot_by_itself_trigger_stop() -> None:
+    controller = FuzzyRateController(max_bits_per_transition=4, stop_threshold=0.92)
+    common = dict(
+        predictive_entropy=0.8,
+        calibration_uncertainty=0.55,
+        steganalysis_risk=0.55,
+        dead_end_risk=0.0,
+        channel_fragility=0.55,
+    )
+
+    high_pressure = controller.decide(ControllerInputs(payload_pressure=1.0, **common))
+    near_completion = controller.decide(ControllerInputs(payload_pressure=0.01, **common))
+
+    assert high_pressure.mode != "STOP"
+    assert near_completion.mode != "STOP"
+
+
 def test_tunable_opportunity_weight_changes_the_policy() -> None:
     inputs = ControllerInputs(
         predictive_entropy=0.95,
