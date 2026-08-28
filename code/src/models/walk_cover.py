@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from collections import Counter, defaultdict
+from collections import Counter, defaultdict, deque
 from collections.abc import Hashable, Iterable
 
 import pandas as pd
@@ -12,15 +12,15 @@ from stego.coding import Candidate
 class WalkCoverModel:
     """First-order walk cover model with separate likelihood and support roles.
 
-    ``likelihood_distribution`` implements the public cover model Q.  It backs
+    ``likelihood_distribution`` implements the public cover model Q. It backs
     off to the global cover distribution when a source was unseen in
     ``cover_train`` so that a natural validation transition remains scoreable.
 
-    ``admissible_distribution`` implements the embedding support A(H_t).  It is
-    restricted to destinations observed leaving the current source in
-    ``cover_train`` and is therefore empty for an unseen source.  Keeping these
-    roles separate prevents a likelihood backoff from silently authorising an
-    unobserved mobility edge.
+    ``admissible_distribution`` implements the observed outgoing support A(H_t).
+    ``viable_admissible_distribution`` further restricts this support to the
+    greatest cover-train-only outgoing viability kernel. Once a steganographic
+    walk diverges, using the viable support guarantees that every emitted next
+    state has at least one future continuation inside the same public kernel.
     """
 
     def __init__(self, *, prior_strength: float = 8.0, top_k: int = 32) -> None:
@@ -32,11 +32,17 @@ class WalkCoverModel:
         self.top_k = int(top_k)
         self._source_counts: dict[Hashable, Counter[Hashable]] = {}
         self._global_counts: Counter[Hashable] = Counter()
+        self._viable_nodes: frozenset[Hashable] = frozenset()
         self._entropy_scale_cache: dict[float, float] = {}
 
     @property
     def destinations(self) -> frozenset[Hashable]:
         return frozenset(self._global_counts)
+
+    @property
+    def viable_nodes(self) -> frozenset[Hashable]:
+        self._ensure_fitted()
+        return self._viable_nodes
 
     def fit(self, frame: pd.DataFrame) -> WalkCoverModel:
         required = {"source", "destination"}
@@ -62,6 +68,7 @@ class WalkCoverModel:
             raise ValueError("Cannot fit walk cover model on an empty stream")
         self._source_counts = dict(source_counts)
         self._global_counts = global_counts
+        self._viable_nodes = _greatest_outgoing_viability_kernel(self._source_counts)
         self._entropy_scale_cache.clear()
         return self
 
@@ -92,6 +99,16 @@ class WalkCoverModel:
     def admissible_count(self, source: Hashable) -> int:
         return len(self.admissible_actions(source))
 
+    def viable_admissible_actions(self, source: Hashable) -> frozenset[Hashable]:
+        return frozenset(
+            action
+            for action in self.admissible_actions(source)
+            if action in self._viable_nodes
+        )
+
+    def viable_admissible_count(self, source: Hashable) -> int:
+        return len(self.viable_admissible_actions(source))
+
     def candidate_distribution(
         self,
         source: Hashable,
@@ -121,22 +138,30 @@ class WalkCoverModel:
         }
         return _ranked_probabilities(probabilities, self.top_k)
 
-    def likelihood_distribution(
-        self,
-        source: Hashable,
-    ) -> list[Candidate]:
+    def likelihood_distribution(self, source: Hashable) -> list[Candidate]:
         return self.candidate_distribution(source)
 
     def admissible_distribution(self, source: Hashable) -> list[Candidate]:
-        """Embedding distribution Q restricted and renormalized on A(H_t)."""
+        """Return Q restricted and renormalized on observed outgoing support A."""
 
-        admissible = self.admissible_actions(source)
-        if not admissible:
+        return self._restricted_distribution(source, self.admissible_actions(source))
+
+    def viable_admissible_distribution(self, source: Hashable) -> list[Candidate]:
+        """Return Q restricted to the public sink-free viability kernel A+."""
+
+        return self._restricted_distribution(source, self.viable_admissible_actions(source))
+
+    def _restricted_distribution(
+        self,
+        source: Hashable,
+        actions: frozenset[Hashable],
+    ) -> list[Candidate]:
+        if not actions:
             return []
         candidates = [
             item
             for item in self.candidate_distribution(source)
-            if item.action in admissible
+            if item.action in actions
         ]
         if not candidates:
             return []
@@ -148,20 +173,28 @@ class WalkCoverModel:
             for item in candidates
         ]
 
-    def future_admissible_count(self, action: Hashable) -> int:
-        """Public one-step viability evidence for a candidate next source."""
+    def nonviable_probability_mass(self, source: Hashable) -> float:
+        """Probability mass in A(H_t) removed by the public viability kernel."""
 
+        base = self.admissible_distribution(source)
+        if not base:
+            return 1.0
+        return float(
+            sum(item.probability for item in base if item.action not in self._viable_nodes)
+        )
+
+    def future_admissible_count(self, action: Hashable) -> int:
         return self.admissible_count(action)
+
+    def future_viable_count(self, action: Hashable) -> int:
+        return self.viable_admissible_count(action)
 
     def robust_entropy_scale_bits(self, *, quantile: float = 0.95) -> float:
         """Return a cover-train-only robust entropy scale for fuzzy inputs.
 
-        Mobility supports can be far smaller and much more concentrated than
-        the nominal ``top_k`` action space. Dividing by ``log2(top_k)`` can then
-        collapse every entropy input below the fuzzy membership breakpoints.
-        This method instead computes a weighted entropy quantile using only
-        source frequencies learned from ``cover_train``. No Eve, validation or
-        test outcome enters the scale.
+        The scale is computed on the actual controllable support A+ and weighted
+        by cover-training source frequency. No Eve, validation, development or
+        holdout outcome enters the scale.
         """
 
         if not 0.0 < quantile <= 1.0:
@@ -175,7 +208,7 @@ class WalkCoverModel:
         weighted: list[tuple[float, int]] = []
         total_weight = 0
         for source, counts in self._source_counts.items():
-            candidates = self.admissible_distribution(source)
+            candidates = self.viable_admissible_distribution(source)
             if not candidates:
                 continue
             probabilities = [float(item.probability) for item in candidates]
@@ -209,10 +242,41 @@ class WalkCoverModel:
             raise ValueError("Walk cover model must be fitted before use")
 
 
-def _ranked_distribution(
-    counts: Counter[Hashable],
-    top_k: int,
-) -> list[Candidate]:
+def _greatest_outgoing_viability_kernel(
+    source_counts: dict[Hashable, Counter[Hashable]],
+) -> frozenset[Hashable]:
+    """Return the greatest set in which every node has an outgoing successor.
+
+    The computation is a reverse-pruning fixed point over unique observed edges
+    and therefore depends only on cover-training topology. Any action emitted
+    inside this kernel has at least one subsequent continuation inside it.
+    """
+
+    alive = set(source_counts)
+    reverse: defaultdict[Hashable, list[Hashable]] = defaultdict(list)
+    out_degree: dict[Hashable, int] = {}
+    for source, counts in source_counts.items():
+        targets = set(counts).intersection(alive)
+        out_degree[source] = len(targets)
+        for destination in targets:
+            reverse[destination].append(source)
+
+    queue = deque(source for source, degree in out_degree.items() if degree == 0)
+    while queue:
+        removed = queue.popleft()
+        if removed not in alive:
+            continue
+        alive.remove(removed)
+        for predecessor in reverse.get(removed, ()):
+            if predecessor not in alive:
+                continue
+            out_degree[predecessor] -= 1
+            if out_degree[predecessor] == 0:
+                queue.append(predecessor)
+    return frozenset(alive)
+
+
+def _ranked_distribution(counts: Counter[Hashable], top_k: int) -> list[Candidate]:
     total = sum(counts.values())
     if total <= 0:
         raise ValueError("counts must contain positive mass")
