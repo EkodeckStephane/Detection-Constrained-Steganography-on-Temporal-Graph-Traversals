@@ -37,6 +37,7 @@ def build_public_controller_inputs(
     committed_payload_bits: int,
     payload_length: int,
     future_admissible_count: Callable[[Hashable], int] | None = None,
+    entropy_scale_bits: float | None = None,
 ) -> ControllerInputs:
     """Build secret-independent Takagi--Sugeno inputs from public evidence.
 
@@ -46,7 +47,9 @@ def build_public_controller_inputs(
 
     The fixed mappings are:
 
-    - predictive entropy: Shannon entropy normalized by log2(top_k);
+    - predictive entropy: Shannon entropy divided by a public entropy scale;
+      the default is log2(top_k), while domains with strongly endogenous
+      supports may supply a robust scale fitted only on cover-training data;
     - calibration uncertainty: 1/sqrt(1+n_eff), with n_eff=0 giving 1;
     - steganalysis risk: the frozen public design-Eve risk supplied by caller;
     - payload pressure: the uncommitted fraction of the public message;
@@ -70,6 +73,8 @@ def build_public_controller_inputs(
         raise ValueError("payload_length must be positive")
     if not 0 <= committed_payload_bits <= payload_length:
         raise ValueError("committed_payload_bits must lie within the public payload")
+    if entropy_scale_bits is not None and entropy_scale_bits <= 0:
+        raise ValueError("entropy_scale_bits must be positive when supplied")
     del context_seen
 
     probabilities = [max(0.0, float(item.probability)) for item in candidates]
@@ -79,7 +84,11 @@ def build_public_controller_inputs(
     probabilities = [value / mass for value in probabilities]
 
     entropy = -sum(value * math.log2(value) for value in probabilities if value > 0)
-    entropy_scale = max(1.0, math.log2(top_k))
+    entropy_scale = (
+        max(1.0, math.log2(top_k))
+        if entropy_scale_bits is None
+        else float(entropy_scale_bits)
+    )
     predictive_entropy = _clip(entropy / entropy_scale)
 
     calibration_uncertainty = _clip(1.0 / math.sqrt(1.0 + context_observations))
