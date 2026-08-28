@@ -57,12 +57,12 @@ datasets:
     transition_semantics: walk
     cover_history_mode: walk_source
     admissibility: observed_outgoing_only
-    cover_pause_emission: sample_secret_independent_continuation_from_current_admissible_cover_distribution
+    cover_pause_emission: preserve_observed_natural_before_divergence_then_sample_secret_independent_continuation_from_current_admissible_cover_distribution
   - id: t_drive_cells
     transition_semantics: walk
     cover_history_mode: walk_source
     admissibility: observed_outgoing_only
-    cover_pause_emission: sample_secret_independent_continuation_from_current_admissible_cover_distribution
+    cover_pause_emission: preserve_observed_natural_before_divergence_then_sample_secret_independent_continuation_from_current_admissible_cover_distribution
 
 sampling:
   row_policy: chronological
@@ -106,7 +106,7 @@ policy:
   stop_semantics: terminate_current_covert_session_then_follow_valid_cover_continuations
   pause_semantics: emit_valid_cover_continuation_without_consuming_payload
   actor_action_cover_semantics: preserve_observed_natural_action_when_not_embedding
-  walk_cover_semantics: sample_valid_cover_continuation_from_current_emitted_state
+  walk_cover_semantics: preserve_observed_natural_before_divergence_then_sample_valid_cover_continuation_from_current_emitted_state
   primary: optimized_takagi_sugeno
   steganalysis_risk_input: chance_referenced_public_top_cover_design_eve_advantage
   steganalysis_risk_transform: max_0_2_times_oriented_stego_posterior_minus_0_5
