@@ -28,6 +28,24 @@ def test_temporal_backoff_conditions_on_previous_destination() -> None:
     assert after_b[0].action == "a"
 
 
+def test_effective_observation_count_follows_actual_backoff_level() -> None:
+    train = temporal_frame().loc[lambda frame: frame["split"] == "train"]
+    model = TemporalBackoffModel(prior_strength=1.0, top_k=4).fit(train)
+
+    # Exact context exists after "a" and should be used as the finest evidence.
+    assert model.exact_context_observation_count("u1", "a") > 0
+    assert model.context_observation_count("u1", "a") == model.exact_context_observation_count("u1", "a")
+
+    # An unseen exact history for an observed source backs off to source-level
+    # evidence rather than being treated as a complete cold start.
+    assert model.exact_context_observation_count("u1", "never-seen") == 0
+    assert model.source_observation_count("u1") > 0
+    assert model.context_observation_count("u1", "never-seen") == model.source_observation_count("u1")
+
+    # A genuinely unseen source still has zero evidence.
+    assert model.context_observation_count("new-user", "anything") == 0
+
+
 def test_sequence_id_isolates_history_for_shared_mobility_nodes() -> None:
     frame = pd.DataFrame(
         {
