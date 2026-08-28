@@ -1,4 +1,4 @@
-schema_version: 1
+schema_version: 2
 purpose: pre_outcome_split_freeze
 final_holdout_opened: false
 selection_basis: timestamps_sequence_boundaries_and_sizes_only
@@ -92,6 +92,10 @@ datasets:
       development_test: {trajectories: 1866, points: 3130636}
       final_holdout: {trajectories: 933, points: 1092731}
       quarantine: {trajectories: 9, points: 22421}
+    design_cell_events:
+      cover_train: 12228821
+      eve_train: 4530160
+      policy_validation: 3856347
     trajectory_fractions:
       cover_train: 0.5497054097
       eve_train: 0.1499196572
@@ -110,13 +114,20 @@ datasets:
   t_drive_cells:
     split_unit: whole_mobility_session
     total_raw_points: 10088351
+    preprocessing:
+      coordinate_bounds: {latitude_min: 18.0, latitude_max: 54.0, longitude_min: 73.0, longitude_max: 135.0}
+      session_gap_seconds: 1200
+      split_on_utc_day_change: true
+      grid_cell_size_degrees: 0.01
+      grid_latitude_origin: -90.0
+      grid_longitude_origin: -180.0
     fixed_day_boundaries_utc:
       cover_train_end: '2008-02-05T23:59:59Z'
       eve_train_end: '2008-02-06T23:59:59Z'
       policy_validation_end: '2008-02-07T23:59:59Z'
     intra_day_boundary_utc: '2008-02-08T02:48:00Z'
     intra_day_boundary_rule: minimize_absolute_final_holdout_point_target_error_plus_quarantined_crossing_points_over_minute_boundaries_using_only_session_timestamps_and_sizes
-    session_gap_seconds: 1200
+    counts_semantics: raw_points_before_coordinate_validity_and_spatial_outlier_filtering_used_for_boundary_selection
     counts:
       cover_train: {points: 6207150}
       eve_train: {points: 1453903}
@@ -124,6 +135,11 @@ datasets:
       development_test: {points: 114133}
       final_holdout: {points: 594930}
       quarantine: {sessions: 2164, points: 332079}
+    filtered_design_counts:
+      cover_train: {points: 6187297, sessions: 133564, cell_events: 6053733, excluded_raw_points: 19853}
+      eve_train: {points: 1448655, sessions: 28182, cell_events: 1420473, excluded_raw_points: 5248}
+      policy_validation: {points: 1381116, sessions: 24529, cell_events: 1356587, excluded_raw_points: 5040}
+      totals: {points: 9017068, sessions: 186275, cell_events: 8830793, invalid_points: 84, spatial_outlier_points: 30057}
     point_fractions:
       cover_train: 0.6152789490
       eve_train: 0.1441170118
@@ -131,4 +147,4 @@ datasets:
       development_test: 0.0113133455
       final_holdout: 0.0589719767
       quarantine: 0.0329170744
-    note: strict_global_temporal_separation_is_preferred_to_assigning_boundary_crossing_sessions_to_either_side
+    note: raw counts define the frozen temporal boundaries; filtered design counts define the actual mobility observations used by the model. Strict global temporal separation is preferred to assigning boundary-crossing sessions to either side.
