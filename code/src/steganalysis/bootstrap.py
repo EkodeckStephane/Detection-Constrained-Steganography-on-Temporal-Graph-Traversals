@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 
 import numpy as np
-from scipy import sparse
+from numba import njit, prange
 from sklearn.metrics import roc_auc_score
 
 from steganalysis.detectors import adversarial_auc
@@ -29,25 +29,21 @@ def cluster_bootstrap_worst_adversarial_auc(
     resamples: int = 10000,
     confidence_level: float = 0.95,
     seed: int = 20260827,
-    batch_size: int = 64,
+    batch_size: int = 128,
 ) -> WorstAucBootstrap:
     """Cluster bootstrap the worst orientation-invariant design-Eve AUC.
 
-    Whole trajectories/sources are resampled with replacement. For every
-    bootstrap replicate we compute ``max(AUC, 1-AUC)`` for each frozen
-    design-Eve and then take the maximum across Eves. The confidence interval
-    is therefore on the actual worst-adversary statistic used by policy
-    selection, including dependence between detector scores.
+    Whole trajectories/sources are resampled with replacement. Each resample is
+    represented exactly by cluster multiplicities. For every frozen detector we
+    compute the weighted Mann--Whitney AUC, including exact half-credit for score
+    ties, then take ``max(AUC, 1-AUC)`` and finally the maximum across design-Eves.
 
-    The implementation is algebraically equivalent to materializing every
-    replicated observation and calling ``roc_auc_score`` on each bootstrap
-    sample. It instead represents a resample by cluster multiplicities and
-    computes the exact weighted Mann--Whitney AUC over fixed score-tie groups.
-    This preserves the original statistic while making 10,000 cluster
-    resamples practical on the full validation regions.
+    The statistic is algebraically identical to materializing every replicated
+    observation and calling ``roc_auc_score``. The weighted scan is compiled so
+    that 10,000 cluster resamples remain practical on the full validation sets.
     """
 
-    y = np.asarray(labels, dtype=int)
+    y = np.asarray(labels, dtype=np.int8)
     cluster_values = np.asarray(clusters, dtype=object)
     if y.ndim != 1 or cluster_values.ndim != 1 or len(y) != len(cluster_values):
         raise ValueError("labels and clusters must be aligned one-dimensional arrays")
@@ -81,9 +77,10 @@ def cluster_bootstrap_worst_adversarial_auc(
     cluster_count = len(unique_clusters)
     if cluster_count == 0:
         raise ValueError("at least one cluster is required")
+    inverse = inverse.astype(np.int32, copy=False)
 
-    grouped = {
-        name: _cluster_score_groups(y, values, inverse, cluster_count)
+    prepared = {
+        name: _prepare_sorted_detector(y, values, inverse)
         for name, values in scores.items()
     }
 
@@ -97,37 +94,26 @@ def cluster_bootstrap_worst_adversarial_auc(
             cluster_count,
             size=(current_batch, cluster_count),
         )
-        multiplicities = np.zeros((current_batch, cluster_count), dtype=float)
+        multiplicities = np.zeros((current_batch, cluster_count), dtype=np.int32)
         batch_rows = np.repeat(np.arange(current_batch), cluster_count)
         np.add.at(
             multiplicities,
             (batch_rows, sampled.ravel()),
-            1.0,
+            1,
         )
 
         worst = np.full(current_batch, 0.5, dtype=float)
         valid = np.ones(current_batch, dtype=bool)
-        for positive_groups, negative_groups in grouped.values():
-            positive = np.asarray(positive_groups.T.dot(multiplicities.T).T)
-            negative = np.asarray(negative_groups.T.dot(multiplicities.T).T)
-            positive_total = positive.sum(axis=1)
-            negative_total = negative.sum(axis=1)
-            detector_valid = (positive_total > 0) & (negative_total > 0)
-            valid &= detector_valid
-
-            negative_before = np.cumsum(negative, axis=1) - negative
-            numerator = (
-                positive * (negative_before + 0.5 * negative)
-            ).sum(axis=1)
-            denominator = positive_total * negative_total
-            raw_auc = np.divide(
-                numerator,
-                denominator,
-                out=np.full(current_batch, np.nan, dtype=float),
-                where=denominator > 0,
+        for labels_sorted, clusters_sorted, scores_sorted in prepared.values():
+            detector_values = _weighted_adversarial_auc_replicates(
+                multiplicities,
+                labels_sorted,
+                clusters_sorted,
+                scores_sorted,
             )
-            detector_adversarial = np.maximum(raw_auc, 1.0 - raw_auc)
-            worst = np.maximum(worst, np.nan_to_num(detector_adversarial, nan=0.5))
+            detector_valid = np.isfinite(detector_values)
+            valid &= detector_valid
+            worst = np.maximum(worst, np.nan_to_num(detector_values, nan=0.5))
 
         bootstrap_values.extend(worst[valid].tolist())
         generated += current_batch
@@ -149,31 +135,65 @@ def cluster_bootstrap_worst_adversarial_auc(
     )
 
 
-def _cluster_score_groups(
+def _prepare_sorted_detector(
     labels: np.ndarray,
     scores: np.ndarray,
-    cluster_inverse: np.ndarray,
-    cluster_count: int,
-) -> tuple[sparse.csr_matrix, sparse.csr_matrix]:
-    """Count positive/negative observations by cluster and equal-score group."""
+    clusters: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    order = np.argsort(scores, kind="stable")
+    return (
+        labels[order].astype(np.int8, copy=False),
+        clusters[order].astype(np.int32, copy=False),
+        scores[order].astype(np.float64, copy=False),
+    )
 
-    _, score_group = np.unique(scores, return_inverse=True)
-    group_count = int(score_group.max()) + 1
-    positive_mask = labels == 1
-    negative_mask = labels == 0
 
-    positive = sparse.coo_matrix(
-        (
-            np.ones(int(positive_mask.sum()), dtype=float),
-            (cluster_inverse[positive_mask], score_group[positive_mask]),
-        ),
-        shape=(cluster_count, group_count),
-    ).tocsr()
-    negative = sparse.coo_matrix(
-        (
-            np.ones(int(negative_mask.sum()), dtype=float),
-            (cluster_inverse[negative_mask], score_group[negative_mask]),
-        ),
-        shape=(cluster_count, group_count),
-    ).tocsr()
-    return positive, negative
+@njit(cache=True, parallel=True)
+def _weighted_adversarial_auc_replicates(
+    multiplicities: np.ndarray,
+    labels_sorted: np.ndarray,
+    clusters_sorted: np.ndarray,
+    scores_sorted: np.ndarray,
+) -> np.ndarray:
+    """Compute exact weighted AUC* for many bootstrap multiplicity vectors."""
+
+    replicate_count = multiplicities.shape[0]
+    observation_count = labels_sorted.shape[0]
+    output = np.empty(replicate_count, dtype=np.float64)
+
+    for replicate in prange(replicate_count):
+        total_positive = 0.0
+        total_negative = 0.0
+        cumulative_negative = 0.0
+        numerator = 0.0
+        index = 0
+
+        while index < observation_count:
+            score = scores_sorted[index]
+            group_positive = 0.0
+            group_negative = 0.0
+            cursor = index
+            while cursor < observation_count and scores_sorted[cursor] == score:
+                weight = multiplicities[replicate, clusters_sorted[cursor]]
+                if labels_sorted[cursor] == 1:
+                    group_positive += weight
+                    total_positive += weight
+                else:
+                    group_negative += weight
+                    total_negative += weight
+                cursor += 1
+
+            numerator += group_positive * (
+                cumulative_negative + 0.5 * group_negative
+            )
+            cumulative_negative += group_negative
+            index = cursor
+
+        denominator = total_positive * total_negative
+        if denominator <= 0.0:
+            output[replicate] = np.nan
+        else:
+            raw_auc = numerator / denominator
+            output[replicate] = max(raw_auc, 1.0 - raw_auc)
+
+    return output
