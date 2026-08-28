@@ -34,29 +34,35 @@ splits:
       - '2008-02-06T23:59:59Z'
       - '2008-02-07T23:59:59Z'
     final_boundary: session_safe_boundary_inside_2008_02_08_to_reserve_last_five_percent_of_all_points
-    boundary_quarantine_sessions: 0
+    boundary_quarantine_sessions: 2164
+    boundary_quarantine_points: 332079
 
 datasets:
   - id: tgbl-wiki
     transition_semantics: actor_action
     cover_history_mode: actor_history
     admissibility: public_catalog_with_probabilities_learned_only_from_cover_train
+    cover_pause_emission: passthrough_observed_natural_action
   - id: mooc
     transition_semantics: actor_action
     cover_history_mode: actor_history
     admissibility: public_catalog_with_probabilities_learned_only_from_cover_train
+    cover_pause_emission: passthrough_observed_natural_action
   - id: lastfm
     transition_semantics: actor_action
     cover_history_mode: actor_history
     admissibility: public_catalog_with_probabilities_learned_only_from_cover_train
+    cover_pause_emission: passthrough_observed_natural_action
   - id: geolife_cells
     transition_semantics: walk
     cover_history_mode: walk_source
     admissibility: observed_outgoing_only
+    cover_pause_emission: sample_secret_independent_continuation_from_current_admissible_cover_distribution
   - id: t_drive_cells
     transition_semantics: walk
     cover_history_mode: walk_source
     admissibility: observed_outgoing_only
+    cover_pause_emission: sample_secret_independent_continuation_from_current_admissible_cover_distribution
 
 sampling:
   row_policy: chronological
@@ -99,8 +105,11 @@ policy:
     - STOP
   stop_semantics: terminate_current_covert_session_then_follow_valid_cover_continuations
   pause_semantics: emit_valid_cover_continuation_without_consuming_payload
+  actor_action_cover_semantics: preserve_observed_natural_action_when_not_embedding
+  walk_cover_semantics: sample_valid_cover_continuation_from_current_emitted_state
   primary: optimized_takagi_sugeno
-  steganalysis_risk_input: public_top_cover_reference_risk_from_maximum_oriented_design_eve_score
+  steganalysis_risk_input: chance_referenced_public_top_cover_design_eve_advantage
+  steganalysis_risk_transform: max_0_2_times_oriented_stego_posterior_minus_0_5
   optimization:
     algorithm: differential_evolution
     implementation: scipy.optimize.differential_evolution
@@ -149,6 +158,7 @@ steganalysis:
     - 1.00
   score_orientation: frozen_on_eve_train_orientation_calibration_block
   risk_aggregation: maximum_oriented_score_across_design_eves
+  controller_risk_mapping: chance_referenced_advantage_zero_at_posterior_0_5
   unseen_eves:
     - mlp_public_features
     - gru_sequence
