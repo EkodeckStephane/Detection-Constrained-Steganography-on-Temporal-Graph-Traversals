@@ -81,16 +81,36 @@ class TemporalBackoffModel:
         normalized_previous = self._normalized_previous(previous_destination)
         return (source, normalized_previous) in self._context_counts
 
+    def exact_context_observation_count(
+        self,
+        source: Hashable,
+        previous_destination: Hashable | None,
+    ) -> int:
+        """Return observations supporting the exact causal context only."""
+
+        normalized_previous = self._normalized_previous(previous_destination)
+        counts = self._context_counts.get((source, normalized_previous))
+        return 0 if counts is None else int(sum(counts.values()))
+
     def context_observation_count(
         self,
         source: Hashable,
         previous_destination: Hashable | None,
     ) -> int:
-        """Number of cover-training observations supporting this exact context."""
+        """Return evidence at the finest backoff level actually used.
 
-        normalized_previous = self._normalized_previous(previous_destination)
-        counts = self._context_counts.get((source, normalized_previous))
-        return 0 if counts is None else int(sum(counts.values()))
+        Exact context evidence is preferred. If that context is unseen but the
+        source was observed during cover training, candidate generation backs
+        off to the source-level distribution, so source observations are the
+        relevant calibration evidence. A completely unseen source returns zero;
+        global sample size is deliberately not used to erase cold-start
+        uncertainty.
+        """
+
+        exact = self.exact_context_observation_count(source, previous_destination)
+        if exact > 0:
+            return exact
+        return self.source_observation_count(source)
 
     def source_observation_count(self, source: Hashable) -> int:
         """Number of cover-training observations available for source-level backoff."""
