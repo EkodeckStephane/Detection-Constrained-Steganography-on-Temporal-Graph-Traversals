@@ -42,6 +42,7 @@ jobs:
             tests/test_admissibility.py \
             tests/test_walk_cover.py \
             tests/test_walk_design.py \
+            tests/test_walk_mixture.py \
             tests/test_asoc_cover.py \
             tests/test_cover_semantics.py \
             tests/test_public_risk.py \
