@@ -34,6 +34,50 @@ def test_public_inputs_are_normalized_and_payload_secret_independent() -> None:
     assert first.channel_fragility == pytest.approx(0.5)
 
 
+def test_cover_calibrated_entropy_scale_changes_only_entropy_mapping() -> None:
+    candidates = [Candidate("a", 0.5), Candidate("b", 0.5)]
+    default = build_public_controller_inputs(
+        candidates=candidates,
+        top_k=32,
+        context_observations=9,
+        context_seen=True,
+        steganalysis_risk=0.2,
+        committed_payload_bits=0,
+        payload_length=32,
+    )
+    calibrated = build_public_controller_inputs(
+        candidates=candidates,
+        top_k=32,
+        context_observations=9,
+        context_seen=True,
+        steganalysis_risk=0.2,
+        committed_payload_bits=0,
+        payload_length=32,
+        entropy_scale_bits=2.0,
+    )
+    assert default.predictive_entropy == pytest.approx(0.2)
+    assert calibrated.predictive_entropy == pytest.approx(0.5)
+    assert calibrated.calibration_uncertainty == default.calibration_uncertainty
+    assert calibrated.steganalysis_risk == default.steganalysis_risk
+    assert calibrated.payload_pressure == default.payload_pressure
+    assert calibrated.dead_end_risk == default.dead_end_risk
+    assert calibrated.channel_fragility == default.channel_fragility
+
+
+def test_non_positive_entropy_scale_is_rejected() -> None:
+    with pytest.raises(ValueError):
+        build_public_controller_inputs(
+            candidates=[Candidate("a", 0.5), Candidate("b", 0.5)],
+            top_k=32,
+            context_observations=1,
+            context_seen=True,
+            steganalysis_risk=0.1,
+            committed_payload_bits=0,
+            payload_length=32,
+            entropy_scale_bits=0.0,
+        )
+
+
 def test_zero_effective_evidence_has_maximum_calibration_uncertainty() -> None:
     inputs = build_public_controller_inputs(
         candidates=[Candidate("a", 0.7), Candidate("b", 0.3)],
