@@ -1,0 +1,134 @@
+schema_version: 1
+purpose: pre_outcome_split_freeze
+final_holdout_opened: false
+selection_basis: timestamps_sequence_boundaries_and_sizes_only
+raw_dataset_bundle_sha256: 798138893eae981feb845831274ac200777e47f1a8289c8f9532bb41c4f5ed14
+dataset_metadata_manifest_sha256: 81930921a11a6d325820f26c4d60be190016bfa6da5edee24322ea6ee1f45f4e
+
+target_fractions:
+  cover_train: 0.55
+  eve_train: 0.15
+  policy_validation: 0.15
+  development_test: 0.10
+  final_holdout: 0.05
+
+datasets:
+  tgbl-wiki:
+    total_events: 157474
+    timestamp_cutoffs:
+      cover_train_end: 1470888.0
+      eve_train_end: 1862652.0
+      policy_validation_end: 2218288.0
+      development_test_end: 2501976.0
+    counts:
+      cover_train: 86611
+      eve_train: 23621
+      policy_validation: 23621
+      development_test: 15748
+      final_holdout: 7873
+      quarantine: 0
+    fractions:
+      cover_train: 0.5500019051
+      eve_train: 0.1499993650
+      policy_validation: 0.1499993650
+      development_test: 0.1000038102
+      final_holdout: 0.0499955548
+
+  mooc:
+    total_events: 411749
+    timestamp_cutoffs:
+      cover_train_end: 1559210.0
+      eve_train_end: 1917241.0
+      policy_validation_end: 2250152.0
+      development_test_end: 2495267.0
+    counts:
+      cover_train: 226462
+      eve_train: 61763
+      policy_validation: 61762
+      development_test: 41175
+      final_holdout: 20587
+      quarantine: 0
+    fractions:
+      cover_train: 0.5500001214
+      eve_train: 0.1500015786
+      policy_validation: 0.1499991500
+      development_test: 0.1000002429
+      final_holdout: 0.0499989071
+
+  lastfm:
+    total_events: 1293103
+    timestamp_cutoffs:
+      cover_train_end: 86496231.0
+      eve_train_end: 103764818.0
+      policy_validation_end: 120235548.0
+      development_test_end: 128691932.0
+    counts:
+      cover_train: 711207
+      eve_train: 193966
+      policy_validation: 193965
+      development_test: 129310
+      final_holdout: 64655
+      quarantine: 0
+    fractions:
+      cover_train: 0.5500002707
+      eve_train: 0.1500004253
+      policy_validation: 0.1499996520
+      development_test: 0.0999997680
+      final_holdout: 0.0499998840
+
+  geolife_cells:
+    split_unit: whole_trajectory
+    archive_trajectories: 18670
+    total_points: 24876978
+    timestamp_cutoffs_utc:
+      cover_train_end: '2009-03-16T00:17:32Z'
+      eve_train_end: '2009-06-17T23:15:34Z'
+      policy_validation_end: '2010-06-26T03:08:34Z'
+      development_test_end: '2011-10-26T20:21:52Z'
+    counts:
+      cover_train: {trajectories: 10263, points: 12239084}
+      eve_train: {trajectories: 2799, points: 4532959}
+      policy_validation: {trajectories: 2800, points: 3859147}
+      development_test: {trajectories: 1866, points: 3130636}
+      final_holdout: {trajectories: 933, points: 1092731}
+      quarantine: {trajectories: 9, points: 22421}
+    trajectory_fractions:
+      cover_train: 0.5497054097
+      eve_train: 0.1499196572
+      policy_validation: 0.1499732191
+      development_test: 0.0999464381
+      final_holdout: 0.0499732191
+      quarantine: 0.0004820568
+    point_fractions:
+      cover_train: 0.4919843560
+      eve_train: 0.1822150182
+      policy_validation: 0.1551292524
+      development_test: 0.1258447067
+      final_holdout: 0.0439253916
+      quarantine: 0.0009012751
+
+  t_drive_cells:
+    split_unit: whole_mobility_session
+    total_raw_points: 10088351
+    fixed_day_boundaries_utc:
+      cover_train_end: '2008-02-05T23:59:59Z'
+      eve_train_end: '2008-02-06T23:59:59Z'
+      policy_validation_end: '2008-02-07T23:59:59Z'
+    intra_day_boundary_utc: '2008-02-08T02:48:00Z'
+    intra_day_boundary_rule: minimize_absolute_final_holdout_point_target_error_plus_quarantined_crossing_points_over_minute_boundaries_using_only_session_timestamps_and_sizes
+    session_gap_seconds: 1200
+    counts:
+      cover_train: {points: 6207150}
+      eve_train: {points: 1453903}
+      policy_validation: {points: 1386156}
+      development_test: {points: 114133}
+      final_holdout: {points: 594930}
+      quarantine: {sessions: 2164, points: 332079}
+    point_fractions:
+      cover_train: 0.6152789490
+      eve_train: 0.1441170118
+      policy_validation: 0.1374016427
+      development_test: 0.0113133455
+      final_holdout: 0.0589719767
+      quarantine: 0.0329170744
+    note: strict_global_temporal_separation_is_preferred_to_assigning_boundary_crossing_sessions_to_either_side
