@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from controllers.inputs import build_public_controller_inputs
+from controllers.inputs import build_public_controller_inputs, effective_backoff_observation_count
 from stego.coding import Candidate
 
 
@@ -31,9 +31,10 @@ def test_public_inputs_are_normalized_and_payload_secret_independent() -> None:
     assert first.calibration_uncertainty == pytest.approx(0.1)
     assert first.payload_pressure == pytest.approx(0.75)
     assert first.steganalysis_risk == pytest.approx(0.42)
+    assert first.channel_fragility == pytest.approx(0.5)
 
 
-def test_unseen_context_has_maximum_calibration_uncertainty() -> None:
+def test_zero_effective_evidence_has_maximum_calibration_uncertainty() -> None:
     inputs = build_public_controller_inputs(
         candidates=[Candidate("a", 0.7), Candidate("b", 0.3)],
         top_k=32,
@@ -44,6 +45,21 @@ def test_unseen_context_has_maximum_calibration_uncertainty() -> None:
         payload_length=32,
     )
     assert inputs.calibration_uncertainty == 1.0
+
+
+class _BackoffEvidenceStub:
+    def context_observation_count(self, source: str, previous: str | None) -> int:
+        return 0 if previous == "new-context" else 7
+
+    def source_observation_count(self, source: str) -> int:
+        return 25 if source == "seen-source" else 0
+
+
+def test_effective_backoff_evidence_uses_source_when_exact_context_is_unseen() -> None:
+    model = _BackoffEvidenceStub()
+    assert effective_backoff_observation_count(model, "seen-source", "old-context") == 7
+    assert effective_backoff_observation_count(model, "seen-source", "new-context") == 25
+    assert effective_backoff_observation_count(model, "cold-source", "new-context") == 0
 
 
 def test_dead_end_risk_is_probability_mass_of_fragile_continuations() -> None:
