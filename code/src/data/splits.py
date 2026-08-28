@@ -26,6 +26,19 @@ class FourWayTemporalCutoffs:
     sealed_test_fraction: float
 
 
+@dataclass(frozen=True)
+class FiveWayTemporalCutoffs:
+    cover_train_end: float
+    eve_train_end: float
+    policy_validation_end: float
+    development_test_end: float
+    cover_train_fraction: float
+    eve_train_fraction: float
+    policy_validation_fraction: float
+    development_test_fraction: float
+    final_holdout_fraction: float
+
+
 def assign_causal_splits(
     frame: pd.DataFrame,
     *,
@@ -82,14 +95,9 @@ def assign_four_way_causal_splits(
 ) -> tuple[pd.DataFrame, FourWayTemporalCutoffs]:
     """Create four non-overlapping chronological regions for sealed evaluation.
 
-    The regions have distinct scientific roles:
-
-    - ``cover_train`` fits the cover model;
-    - ``eve_train`` fits detector families used during design;
-    - ``policy_validation`` selects controller parameters and the operating point;
-    - ``sealed_test`` is read only after all design choices are frozen.
-
-    Timestamp ties are kept in the same region to prevent boundary leakage.
+    This legacy ASOC V2 split remains available for reproduction of development
+    pilots. New final experiments must use ``assign_five_way_causal_splits`` so
+    that pilot-inspected observations cannot enter the publication holdout.
     """
 
     if frame.empty:
@@ -154,6 +162,108 @@ def assign_four_way_causal_splits(
         eve_train_fraction=float(fractions["eve_train"]),
         policy_validation_fraction=float(fractions["policy_validation"]),
         sealed_test_fraction=float(fractions["sealed_test"]),
+    )
+
+
+def assign_five_way_causal_splits(
+    frame: pd.DataFrame,
+    *,
+    cover_train_fraction: float = 0.55,
+    eve_train_fraction: float = 0.15,
+    policy_validation_fraction: float = 0.15,
+    development_test_fraction: float = 0.05,
+) -> tuple[pd.DataFrame, FiveWayTemporalCutoffs]:
+    """Create a fresh publication holdout after pilot-inspected observations.
+
+    Regions are chronological and timestamp ties remain intact:
+
+    - ``cover_train`` fits the cover model;
+    - ``eve_train`` fits and orients design-Eves;
+    - ``policy_validation`` tunes and freezes the controller;
+    - ``development_test`` contains the early post-validation region that may
+      be inspected during engineering diagnostics;
+    - ``final_holdout`` is the untouched publication test and must not affect
+      any model, detector, threshold, controller, baseline or narrative choice.
+
+    The default 55/15/15/5/10 allocation preserves the original 55/15/15
+    design regions while quarantining the pilot-accessible start of the old
+    15% test block and reserving its last 10% for final evaluation.
+    """
+
+    if frame.empty:
+        raise ValueError("Cannot split an empty table")
+    requested = (
+        cover_train_fraction,
+        eve_train_fraction,
+        policy_validation_fraction,
+        development_test_fraction,
+    )
+    if any(value <= 0 for value in requested):
+        raise ValueError("All pre-holdout fractions must be positive")
+    if sum(requested) >= 1:
+        raise ValueError("A positive final-holdout fraction is required")
+    if not frame["timestamp"].is_monotonic_increasing:
+        raise ValueError("Frame must be sorted chronologically before splitting")
+
+    timestamps = frame["timestamp"].to_numpy(dtype=float)
+    if np.unique(timestamps).size < 5:
+        raise ValueError("At least five distinct timestamps are required")
+
+    cumulative = np.cumsum(np.asarray(requested, dtype=float))
+    cover_end = _cutoff_at_fraction(timestamps, cumulative[0])
+    eve_end = _strict_later_cutoff(
+        timestamps,
+        _cutoff_at_fraction(timestamps, cumulative[1]),
+        previous=cover_end,
+    )
+    policy_end = _strict_later_cutoff(
+        timestamps,
+        _cutoff_at_fraction(timestamps, cumulative[2]),
+        previous=eve_end,
+    )
+    development_end = _strict_later_cutoff(
+        timestamps,
+        _cutoff_at_fraction(timestamps, cumulative[3]),
+        previous=policy_end,
+    )
+    if development_end >= float(timestamps[-1]):
+        raise ValueError("The requested fractions leave no non-empty final holdout")
+
+    result = frame.copy()
+    result["split"] = np.select(
+        [
+            result["timestamp"] <= cover_end,
+            result["timestamp"] <= eve_end,
+            result["timestamp"] <= policy_end,
+            result["timestamp"] <= development_end,
+        ],
+        ["cover_train", "eve_train", "policy_validation", "development_test"],
+        default="final_holdout",
+    )
+    expected = {
+        "cover_train",
+        "eve_train",
+        "policy_validation",
+        "development_test",
+        "final_holdout",
+    }
+    observed = set(result["split"].unique())
+    if observed != expected:
+        raise ValueError("The timestamps do not permit five non-empty causal regions")
+    if result.groupby("timestamp")["split"].nunique().max() != 1:
+        raise AssertionError("Timestamp ties crossed a causal split boundary")
+
+    fractions = result["split"].value_counts(normalize=True)
+    return result, FiveWayTemporalCutoffs(
+        cover_train_end=cover_end,
+        eve_train_end=eve_end,
+        policy_validation_end=policy_end,
+        development_test_end=development_end,
+        cover_train_fraction=float(fractions["cover_train"]),
+        eve_train_fraction=float(fractions["eve_train"]),
+        policy_validation_fraction=float(fractions["policy_validation"]),
+        development_test_fraction=float(fractions["development_test"]),
+        final_holdout_fraction=float(fractions["final_holdout"]),
     )
 
 
