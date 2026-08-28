@@ -40,6 +40,7 @@ jobs:
             tests/test_admissibility.py \
             tests/test_asoc_cover.py \
             tests/test_sealed_selection.py \
+            tests/test_final_holdout.py \
             tests/test_auc_bootstrap.py \
             tests/test_detector_metrics.py \
             tests/test_fuzzy_optimization.py \
