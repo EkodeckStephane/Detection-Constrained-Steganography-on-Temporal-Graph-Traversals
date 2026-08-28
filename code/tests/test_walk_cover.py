@@ -28,6 +28,7 @@ def test_unseen_walk_source_is_scoreable_but_not_admissible() -> None:
     assert sum(item.probability for item in q) == pytest.approx(1.0)
     assert model.admissible_actions("UNSEEN") == frozenset()
     assert model.admissible_distribution("UNSEEN") == []
+    assert model.viable_admissible_distribution("UNSEEN") == []
     assert model.context_observation_count("UNSEEN") == 0
 
 
@@ -42,8 +43,30 @@ def test_known_walk_embedding_support_contains_only_observed_outgoing_edges() ->
     assert model.future_admissible_count("D") == 0
 
 
+def test_viability_kernel_removes_sink_paths_but_preserves_cycles() -> None:
+    frame = pd.DataFrame(
+        {
+            "source": ["A", "A", "B", "X"],
+            "destination": ["B", "SINK", "A", "Y"],
+        }
+    )
+    model = WalkCoverModel(prior_strength=1.0, top_k=8).fit(frame)
+
+    assert model.viable_nodes == frozenset({"A", "B"})
+    assert {item.action for item in model.viable_admissible_distribution("A")} == {"B"}
+    assert model.viable_admissible_distribution("X") == []
+    assert model.future_viable_count("B") == 1
+    assert model.nonviable_probability_mass("A") > 0.0
+
+
 def test_walk_entropy_scale_is_cover_train_only_positive_and_cached() -> None:
-    model = WalkCoverModel(prior_strength=1.0, top_k=4).fit(_train())
+    frame = pd.DataFrame(
+        {
+            "source": ["A", "A", "B", "B"],
+            "destination": ["A", "B", "A", "B"],
+        }
+    )
+    model = WalkCoverModel(prior_strength=1.0, top_k=4).fit(frame)
     first = model.robust_entropy_scale_bits(quantile=0.95)
     second = model.robust_entropy_scale_bits(quantile=0.95)
     assert first == second
