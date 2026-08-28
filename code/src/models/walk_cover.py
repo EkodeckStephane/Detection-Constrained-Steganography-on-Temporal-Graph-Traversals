@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import math
 from collections import Counter, defaultdict
-from collections.abc import Hashable, Iterable, Sequence
+from collections.abc import Hashable, Iterable
 
 import pandas as pd
 
@@ -31,6 +32,7 @@ class WalkCoverModel:
         self.top_k = int(top_k)
         self._source_counts: dict[Hashable, Counter[Hashable]] = {}
         self._global_counts: Counter[Hashable] = Counter()
+        self._entropy_scale_cache: dict[float, float] = {}
 
     @property
     def destinations(self) -> frozenset[Hashable]:
@@ -60,6 +62,7 @@ class WalkCoverModel:
             raise ValueError("Cannot fit walk cover model on an empty stream")
         self._source_counts = dict(source_counts)
         self._global_counts = global_counts
+        self._entropy_scale_cache.clear()
         return self
 
     def has_context(
@@ -149,6 +152,57 @@ class WalkCoverModel:
         """Public one-step viability evidence for a candidate next source."""
 
         return self.admissible_count(action)
+
+    def robust_entropy_scale_bits(self, *, quantile: float = 0.95) -> float:
+        """Return a cover-train-only robust entropy scale for fuzzy inputs.
+
+        Mobility supports can be far smaller and much more concentrated than
+        the nominal ``top_k`` action space. Dividing by ``log2(top_k)`` can then
+        collapse every entropy input below the fuzzy membership breakpoints.
+        This method instead computes a weighted entropy quantile using only
+        source frequencies learned from ``cover_train``. No Eve, validation or
+        test outcome enters the scale.
+        """
+
+        if not 0.0 < quantile <= 1.0:
+            raise ValueError("quantile must lie in (0, 1]")
+        self._ensure_fitted()
+        key = float(quantile)
+        cached = self._entropy_scale_cache.get(key)
+        if cached is not None:
+            return cached
+
+        weighted: list[tuple[float, int]] = []
+        total_weight = 0
+        for source, counts in self._source_counts.items():
+            candidates = self.admissible_distribution(source)
+            if not candidates:
+                continue
+            probabilities = [float(item.probability) for item in candidates]
+            entropy = -sum(
+                probability * math.log2(probability)
+                for probability in probabilities
+                if probability > 0
+            )
+            weight = int(sum(counts.values()))
+            if weight <= 0:
+                continue
+            weighted.append((float(entropy), weight))
+            total_weight += weight
+        if total_weight <= 0:
+            raise ValueError("cover-training entropy scale has no positive weight")
+
+        target = quantile * total_weight
+        cumulative = 0
+        selected = 0.0
+        for entropy, weight in sorted(weighted, key=lambda item: item[0]):
+            cumulative += weight
+            selected = entropy
+            if cumulative >= target:
+                break
+        scale = max(float(selected), 1e-6)
+        self._entropy_scale_cache[key] = scale
+        return scale
 
     def _ensure_fitted(self) -> None:
         if not self._global_counts:
