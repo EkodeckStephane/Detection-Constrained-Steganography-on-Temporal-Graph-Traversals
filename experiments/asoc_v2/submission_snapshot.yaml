@@ -1,0 +1,103 @@
+schema_version: 1
+status: submission_policy_validation_snapshot
+manuscript_title: Detector-Constrained Causal Steganography on Temporal Graphs
+final_holdout_opened: false
+interpretation: policy_selection_and_validation_evidence_not_independent_confirmatory_test
+
+dataset_bundle_sha256: 798138893eae981feb845831274ac200777e47f1a8289c8f9532bb41c4f5ed14
+protocol_commit_parent: a60e4e7ec114f7bae5155b89801b814c9f3d4242
+
+design:
+  detector_auc_budget: 0.60
+  primary_auc: max_auc_and_one_minus_auc
+  payload_bits: 32
+  arithmetic_precision_bits: 128
+  message_seeds: [11, 23, 37, 53, 71]
+  bootstrap_resamples: 10000
+  bootstrap_confidence_level: 0.95
+
+actor_action_validation:
+  tgbl_wiki:
+    bits_per_transition_range: [0.0423, 0.0429]
+    worst_adversarial_auc_range: [0.5010, 0.5016]
+    role: validation_regime
+  mooc:
+    bits_per_transition_range: [0.6370, 0.6395]
+    completion_rate_range: [0.0358, 0.0382]
+    worst_adversarial_auc_range: [0.5264, 0.5278]
+    role: validation_regime
+  lastfm:
+    bits_per_transition_approx: 0.075
+    completion_rate_range: [0.415, 0.429]
+    worst_adversarial_auc_range: [0.5036, 0.5111]
+    worst_seed_bootstrap_10000_ci95: [0.5041, 0.5209]
+    role: validation_regime
+
+mobility_validation:
+  t_drive:
+    cover_points: 6187297
+    eve_points: 1448655
+    validation_points: 1381116
+    cover_transitions: 6053733
+    eve_transitions: 1420473
+    validation_transitions: 1356587
+    cover_entropy_q95_bits: 3.856905
+    zero_payload_feature_difference: 0.0
+    zero_payload_adversarial_auc: 0.5
+    design_eve_calibration:
+      linear_adversarial_auc: 0.6183432119763888
+      forest_adversarial_auc: 0.6608398668731765
+    frozen_policy:
+      source_shortlist_vector: [0.9998292, 0.1696489, 0.1079415, 0.4164748, 0.5008141, 0.5237328, 0.4259336, 0.3225141, 0.9275192]
+      opportunity_scale: 0.85
+      selected_vector: [0.84985482, 0.1696489, 0.1079415, 0.4164748, 0.5008141, 0.5237328, 0.4259336, 0.3225141, 0.9275192]
+      parameter_order:
+        - opportunity_entropy_weight
+        - opportunity_payload_weight
+        - cover_entropy_weight
+        - pause_risk_weight
+        - stop_dead_end_weight
+        - abstention_cover_weight
+        - abstention_pause_weight
+        - abstention_stop_weight
+        - stop_threshold
+    seeds:
+      - {seed: 11, bits_per_transition: 0.2443381810, completion_rate: 0.1115006727, linear_adversarial_auc: 0.5786572330, forest_adversarial_auc: 0.5827774806, worst_adversarial_auc: 0.5827774806, post_divergence_dead_ends: 0}
+      - {seed: 23, bits_per_transition: 0.2444575984, completion_rate: 0.1080353867, linear_adversarial_auc: 0.5771767412, forest_adversarial_auc: 0.5808638646, worst_adversarial_auc: 0.5808638646, post_divergence_dead_ends: 0}
+      - {seed: 37, bits_per_transition: 0.2451143937, completion_rate: 0.1085653716, linear_adversarial_auc: 0.5770315672, forest_adversarial_auc: 0.5771322035, worst_adversarial_auc: 0.5771322035, post_divergence_dead_ends: 0}
+      - {seed: 53, bits_per_transition: 0.2438103859, completion_rate: 0.1116637450, linear_adversarial_auc: 0.5785190776, forest_adversarial_auc: 0.5853282624, worst_adversarial_auc: 0.5853282624, post_divergence_dead_ends: 0}
+      - {seed: 71, bits_per_transition: 0.2447495074, completion_rate: 0.1096253414, linear_adversarial_auc: 0.5789477755, forest_adversarial_auc: 0.5855302009, worst_adversarial_auc: 0.5855302009, post_divergence_dead_ends: 0}
+    worst_point_seed: 71
+    worst_point_seed_bootstrap_10000:
+      point_estimate: 0.5855302009
+      ci95: [0.5818121045, 0.5894834123]
+      max_observed: 0.5933592492
+    post_divergence_dead_ends_across_five_seeds: 0
+    role: primary_full_validation_result
+  geolife:
+    cover_transitions: 12228821
+    eve_transitions: 4530160
+    validation_transitions: 3856347
+    cover_sources: 57531
+    viable_sources: 55490
+    cover_entropy_q95_bits_approx: 0.462
+    zero_payload_feature_difference: 0.0
+    zero_payload_adversarial_auc: 0.5
+    validation_unseen_source_event_fraction_approx: 0.094
+    design_eve_calibration:
+      linear_adversarial_auc_approx: 0.58865
+      forest_adversarial_auc_approx: 0.63180
+    screening_300_uniform_validation_trajectories:
+      - {opportunity_scale: 1.00, bits_per_transition: 0.01014, worst_adversarial_auc: 0.60057}
+      - {opportunity_scale: 0.90, bits_per_transition: 0.00968, worst_adversarial_auc: 0.58535}
+      - {opportunity_scale: 0.85, bits_per_transition: 0.00963, worst_adversarial_auc: 0.58721}
+      - {opportunity_scale: 0.75, bits_per_transition: 0.00948, worst_adversarial_auc: 0.57217}
+    role: boundary_condition_screening_only
+    full_five_seed_policy_certification_reported: false
+
+claim_boundaries:
+  absolute_security_claim: false
+  optimal_adversary_claim: false
+  geolife_certified_operating_point_claim: false
+  independent_final_holdout_claim: false
+  t_drive_primary_claim: five_seed_full_policy_validation_with_worst_seed_cluster_bootstrap
