@@ -1,5 +1,5 @@
 campaign: asoc_v2_causal_detector_constrained_control
-status: final_holdout_reserved_not_opened
+status: submission_policy_validation_snapshot_final_holdout_reserved_not_opened
 
 scientific_object:
   state_recursion: emitted_action
@@ -18,7 +18,7 @@ splits:
   boundary_policy: choose_causal_sequence_safe_boundaries_nearest_target_fractions
   report_effective_fractions: true
   development_test_role: quarantine_pilot_accessible_post_validation_region_and_permit_engineering_diagnostics_before_final_freeze
-  final_holdout_role: untouched_publication_test_never_used_for_model_detector_threshold_policy_baseline_or_narrative_selection
+  final_holdout_role: untouched_confirmatory_region_never_used_for_model_detector_threshold_policy_baseline_or_narrative_selection
   eve_train_internal_split:
     detector_fit_fraction: 0.75
     orientation_calibration_fraction: 0.25
@@ -132,12 +132,14 @@ policy:
       outcome_features_used_for_row_selection: false
       purpose: propose_candidate_shortlist_only
       shortlist_size: 12
-    certification_stage:
+    validation_stage:
       rows: full_policy_validation_region
       message_seeds: all_declared_message_seeds
-      bootstrap_resamples_per_seed: 10000
-      candidate_feasible_only_if_every_seed_auc_ci_upper_at_or_below_budget: true
-      final_ranking: mean_payload_then_mean_completion_then_lower_max_auc_ci_upper_then_lower_mean_abstention
+      point_budget_must_hold_for_every_seed: true
+      uncertainty_seed: seed_with_highest_worst_design_eve_point_estimate
+      uncertainty_bootstrap_resamples: 10000
+      uncertainty_ci_upper_must_be_at_or_below_budget: true
+      final_ranking: mean_payload_then_mean_completion_then_lower_worst_point_auc_then_lower_mean_abstention
     tuned_parameters:
       - opportunity_entropy_weight
       - opportunity_payload_weight
@@ -165,7 +167,7 @@ policy:
 steganalysis:
   detector_auc_budget: 0.60
   primary_auc: adversarial_auc_max_of_auc_and_one_minus_auc
-  selection_rule: full_validation_certified_max_payload_with_every_seed_worst_eve_auc_ci_upper_at_or_below_budget
+  selection_rule: all_five_seed_point_estimates_at_or_below_budget_then_cluster_bootstrap_the_seed_with_highest_worst_design_eve_point_estimate
   design_eves:
     - linear
     - forest
@@ -184,12 +186,13 @@ steganalysis:
     - transformer_sequence
     - temporal_gnn
     - white_box_diagnostic
-  unseen_eve_rule: trained_after_policy_freeze_without_policy_feedback_and_evaluated_only_on_final_holdout
-  final_test_policy: open_final_holdout_once_after_freeze_manifest_verification
+  unseen_eve_rule: confirmatory_extension_not_used_for_submission_policy_selection_claims
+  final_holdout_policy: remains_unopened_in_submission_snapshot
 
 uncertainty:
   bootstrap_resamples: 10000
   confidence_level: 0.95
+  seed_selection_for_bootstrap: highest_worst_design_eve_point_estimate_after_all_five_message_seeds_are_replayed
   worst_eve_bootstrap: resample_clusters_then_take_max_adversarial_auc_across_design_eves_per_replicate
   cluster_unit_priority:
     - sequence_id
@@ -240,7 +243,8 @@ hard_gates:
   final_holdout_may_change_baseline_hyperparameters: false
 
 provenance:
-  output_root: results_final
+  submission_snapshot: experiments/asoc_v2/submission_snapshot.yaml
+  final_output_root_reserved: results_final
   require_commit_sha: true
   require_config_sha256: true
   require_dataset_manifest_sha256: true
