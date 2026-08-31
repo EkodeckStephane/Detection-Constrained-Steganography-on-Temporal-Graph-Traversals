@@ -12,12 +12,23 @@ from sklearn.metrics import balanced_accuracy_score, roc_auc_score, roc_curve
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
-EveKind = Literal["temporal_graph_eve", "sequence_transformer_eve"]
+from steganalysis.detectors import adversarial_auc
+
+EveKind = Literal[
+    "mlp_public_features",
+    "gru_sequence",
+    "sequence_transformer_eve",
+    "temporal_graph_eve",
+]
+
+PAD_ID = 0
+OOV_ID = 1
 
 
 @dataclass(frozen=True)
 class NeuralEveMetrics:
     auc: float
+    adversarial_auc: float
     balanced_accuracy: float
     eer: float
 
@@ -38,10 +49,14 @@ class NeuralEveDetector(nn.Module):
         super().__init__()
         self.kind = kind
         self.context_length = context_length
-        self.source_embedding = nn.Embedding(source_count, embedding_dim, padding_idx=0)
-        self.action_embedding = nn.Embedding(action_count, embedding_dim, padding_idx=0)
+        self.source_embedding = nn.Embedding(source_count, embedding_dim, padding_idx=PAD_ID)
+        self.action_embedding = nn.Embedding(action_count, embedding_dim, padding_idx=PAD_ID)
         self.time_projection = nn.Linear(1, embedding_dim)
-        if kind == "temporal_graph_eve":
+
+        if kind in {"mlp_public_features", "temporal_graph_eve"}:
+            # ``temporal_graph_eve`` is retained only as a backward-compatible
+            # alias for the historical event-level MLP. It must not be reported
+            # as the confirmatory temporal-GNN adversary.
             layers: list[nn.Module] = []
             input_dim = 3 * embedding_dim
             for _ in range(num_layers):
@@ -51,7 +66,18 @@ class NeuralEveDetector(nn.Module):
                 input_dim = hidden_dim
             self.encoder = nn.Sequential(*layers)
             classifier_input = hidden_dim
+        elif kind == "gru_sequence":
+            self.encoder = nn.GRU(
+                input_size=embedding_dim,
+                hidden_size=hidden_dim,
+                num_layers=num_layers,
+                batch_first=True,
+                dropout=dropout if num_layers > 1 else 0.0,
+            )
+            classifier_input = embedding_dim + hidden_dim + embedding_dim
         elif kind == "sequence_transformer_eve":
+            if embedding_dim % 4 != 0:
+                raise ValueError("embedding_dim must be divisible by four for the transformer Eve")
             layer = nn.TransformerEncoderLayer(
                 d_model=embedding_dim,
                 nhead=4,
@@ -63,6 +89,7 @@ class NeuralEveDetector(nn.Module):
             classifier_input = 3 * embedding_dim
         else:
             raise ValueError(f"Unsupported neural Eve kind: {kind}")
+
         self.classifier = nn.Sequential(
             nn.Linear(classifier_input, hidden_dim),
             nn.ReLU(),
@@ -80,8 +107,14 @@ class NeuralEveDetector(nn.Module):
         source = self.source_embedding(sources)
         action = self.action_embedding(actions)
         time = self.time_projection(gaps.unsqueeze(1))
-        if self.kind == "temporal_graph_eve":
+
+        if self.kind in {"mlp_public_features", "temporal_graph_eve"}:
             hidden = self.encoder(torch.cat([source, action, time], dim=1))
+        elif self.kind == "gru_sequence":
+            sequence = self.action_embedding(contexts)
+            _, state = self.encoder(sequence)
+            encoded = state[-1]
+            hidden = torch.cat([source, encoded, time], dim=1)
         else:
             sequence = self.action_embedding(contexts)
             encoded = self.encoder(sequence)[:, -1, :]
@@ -103,15 +136,24 @@ def fit_and_score_neural_eve(
     seed: int,
     patience: int = 5,
 ) -> NeuralEveMetrics:
+    """Fit one confirmatory neural Eve without reading test vocabulary.
+
+    ``validation`` is the adversary-training frame frozen before confirmatory
+    evaluation. Source/action vocabularies are learned from that frame only.
+    Any identifier first encountered in ``test`` is mapped to ``OOV_ID``. The
+    test frame therefore cannot influence model dimensionality, embeddings or
+    preprocessing.
+    """
+
     torch.manual_seed(seed)
     np.random.seed(seed)
-    source_to_id = _vocabulary(pd.concat([validation["source"], test["source"]], ignore_index=True))
-    action_to_id = _vocabulary(pd.concat([validation["action"], test["action"]], ignore_index=True))
+    source_to_id = _vocabulary(validation["source"])
+    action_to_id = _vocabulary(validation["action"])
     train_tensors = _examples(validation, source_to_id, action_to_id, context_length)
     test_tensors = _examples(test, source_to_id, action_to_id, context_length)
     model = NeuralEveDetector(
-        source_count=len(source_to_id) + 1,
-        action_count=len(action_to_id) + 1,
+        source_count=len(source_to_id) + 2,
+        action_count=len(action_to_id) + 2,
         context_length=context_length,
         embedding_dim=embedding_dim,
         hidden_dim=hidden_dim,
@@ -123,12 +165,12 @@ def fit_and_score_neural_eve(
     loader = DataLoader(TensorDataset(*train_tensors), batch_size=batch_size, shuffle=True)
 
     best_loss = float("inf")
-    best_state: dict | None = None
+    best_state: dict[str, torch.Tensor] | None = None
     epochs_without_improvement = 0
 
     for _ in range(epochs):
         model.train()
-        epoch_losses = []
+        epoch_losses: list[float] = []
         for sources, actions, contexts, gaps, labels in loader:
             optimizer.zero_grad()
             loss = criterion(model(sources, actions, contexts, gaps), labels.float())
@@ -136,11 +178,12 @@ def fit_and_score_neural_eve(
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
             epoch_losses.append(float(loss.item()))
-        scheduler.step(np.mean(epoch_losses))
+        mean_loss = float(np.mean(epoch_losses))
+        scheduler.step(mean_loss)
 
-        if np.mean(epoch_losses) < best_loss:
-            best_loss = np.mean(epoch_losses)
-            best_state = {key: value.cpu().clone() for key, value in model.state_dict().items()}
+        if mean_loss < best_loss:
+            best_loss = mean_loss
+            best_state = {key: value.detach().cpu().clone() for key, value in model.state_dict().items()}
             epochs_without_improvement = 0
         else:
             epochs_without_improvement += 1
@@ -154,11 +197,13 @@ def fit_and_score_neural_eve(
     model.eval()
     with torch.no_grad():
         sources, actions, contexts, gaps, labels = test_tensors
-        scores = torch.sigmoid(model(sources, actions, contexts, gaps)).numpy()
-    labels_np = labels.numpy()
+        scores = torch.sigmoid(model(sources, actions, contexts, gaps)).cpu().numpy()
+    labels_np = labels.cpu().numpy()
     predictions = (scores >= 0.5).astype(int)
+    raw_auc = float(roc_auc_score(labels_np, scores))
     return NeuralEveMetrics(
-        auc=float(roc_auc_score(labels_np, scores)),
+        auc=raw_auc,
+        adversarial_auc=adversarial_auc(raw_auc),
         balanced_accuracy=float(balanced_accuracy_score(labels_np, predictions)),
         eer=_eer(labels_np, scores),
     )
@@ -167,6 +212,7 @@ def fit_and_score_neural_eve(
 def metrics_to_dict(metrics: NeuralEveMetrics) -> dict[str, float]:
     return {
         "auc": metrics.auc,
+        "adversarial_auc": metrics.adversarial_auc,
         "balanced_accuracy": metrics.balanced_accuracy,
         "eer": metrics.eer,
     }
@@ -174,7 +220,8 @@ def metrics_to_dict(metrics: NeuralEveMetrics) -> dict[str, float]:
 
 def _vocabulary(values: pd.Series) -> dict[str, int]:
     counts = Counter(str(value) for value in values)
-    return {value: index + 1 for index, (value, _) in enumerate(counts.most_common())}
+    # 0 is padding and 1 is reserved for identifiers unseen at fit time.
+    return {value: index + 2 for index, (value, _) in enumerate(counts.most_common())}
 
 
 def _examples(
@@ -183,11 +230,13 @@ def _examples(
     action_to_id: dict[str, int],
     context_length: int,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
-    sources = []
-    actions = []
-    contexts = []
-    gaps = []
-    labels = []
+    if context_length < 1:
+        raise ValueError("context_length must be positive")
+    sources: list[int] = []
+    actions: list[int] = []
+    contexts: list[list[int]] = []
+    gaps: list[float] = []
+    labels: list[int] = []
     history_by_stream: dict[tuple[str, int], list[int]] = {}
     previous_time_by_stream: dict[tuple[str, int], float] = {}
     ordered = frame.sort_values(["timestamp", "pair_id", "label"], kind="stable")
@@ -195,12 +244,12 @@ def _examples(
         index=False
     ):
         source_key = str(source)
-        action_id = action_to_id.get(str(action), 0)
+        action_id = action_to_id.get(str(action), OOV_ID)
         label_value = int(label)
         stream_key = (source_key, label_value)
         history = history_by_stream.setdefault(stream_key, [])
-        contexts.append(([0] * context_length + history + [action_id])[-context_length:])
-        sources.append(source_to_id.get(source_key, 0))
+        contexts.append(([PAD_ID] * context_length + history + [action_id])[-context_length:])
+        sources.append(source_to_id.get(source_key, OOV_ID))
         actions.append(action_id)
         gap = float(timestamp) - previous_time_by_stream.get(stream_key, float(timestamp))
         gaps.append(math.log1p(max(0.0, gap)))
