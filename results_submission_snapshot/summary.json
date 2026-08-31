@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "status": "submission_policy_validation_snapshot",
+  "source_snapshot_commit": "2d97df289ae1faaf05c0c7bb656b94a8e6dab898",
+  "final_holdout_opened": false,
+  "detector_auc_budget": 0.60,
+  "message_seeds": [11, 23, 37, 53, 71],
+  "bootstrap_resamples": 10000,
+  "actor_action": {
+    "tgbl-wiki": {
+      "bits_per_transition_range": [0.0423, 0.0429],
+      "worst_adversarial_auc_range": [0.5010, 0.5016]
+    },
+    "mooc": {
+      "bits_per_transition_range": [0.6370, 0.6395],
+      "completion_rate_range": [0.0358, 0.0382],
+      "worst_adversarial_auc_range": [0.5264, 0.5278]
+    },
+    "lastfm": {
+      "bits_per_transition_approx": 0.075,
+      "completion_rate_range": [0.415, 0.429],
+      "worst_adversarial_auc_range": [0.5036, 0.5111],
+      "worst_seed_bootstrap_ci95": [0.5041, 0.5209]
+    }
+  },
+  "mobility": {
+    "t_drive": {
+      "validation_transitions": 1356587,
+      "cover_entropy_q95_bits": 3.856905,
+      "zero_payload_adversarial_auc": 0.5,
+      "design_eve_linear_adversarial_auc": 0.6183432119763888,
+      "design_eve_forest_adversarial_auc": 0.6608398668731765,
+      "bits_per_transition_range": [0.2438103859, 0.2451143937],
+      "completion_rate_range": [0.1080353867, 0.1116637450],
+      "worst_adversarial_auc_range": [0.5771322035, 0.5855302009],
+      "worst_point_seed": 71,
+      "worst_point_seed_bootstrap_ci95": [0.5818121045, 0.5894834123],
+      "post_divergence_dead_ends_across_five_seeds": 0
+    },
+    "geolife": {
+      "role": "boundary_condition_screening_only",
+      "validation_transitions": 3856347,
+      "validation_unseen_source_event_fraction_approx": 0.094,
+      "zero_payload_adversarial_auc": 0.5,
+      "design_eve_linear_adversarial_auc_approx": 0.58865,
+      "design_eve_forest_adversarial_auc_approx": 0.63180,
+      "screening": [
+        {"opportunity_scale": 1.0, "bits_per_transition": 0.01014, "worst_adversarial_auc": 0.60057},
+        {"opportunity_scale": 0.9, "bits_per_transition": 0.00968, "worst_adversarial_auc": 0.58535},
+        {"opportunity_scale": 0.85, "bits_per_transition": 0.00963, "worst_adversarial_auc": 0.58721},
+        {"opportunity_scale": 0.75, "bits_per_transition": 0.00948, "worst_adversarial_auc": 0.57217}
+      ],
+      "certified_operating_point_claim": false
+    }
+  },
+  "claim_boundaries": {
+    "absolute_security": false,
+    "optimal_adversary": false,
+    "independent_final_holdout": false,
+    "geolife_certified_operating_point": false
+  }
+}
