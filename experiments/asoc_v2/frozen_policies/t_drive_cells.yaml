@@ -1,0 +1,42 @@
+schema_version: 1
+dataset_id: t_drive_cells
+role: confirmatory_fixed_policy
+selection_region: policy_validation
+source_submission_snapshot_commit: 2d97df289ae1faaf05c0c7bb656b94a8e6dab898
+source_commit_sha: 2d97df289ae1faaf05c0c7bb656b94a8e6dab898
+may_change_after_holdout: false
+
+selected_policy:
+  controller: optimized_takagi_sugeno
+  opportunity_scale: 0.85
+  parameter_order:
+    - opportunity_entropy_weight
+    - opportunity_payload_weight
+    - cover_entropy_weight
+    - pause_risk_weight
+    - stop_dead_end_weight
+    - abstention_cover_weight
+    - abstention_pause_weight
+    - abstention_stop_weight
+    - stop_threshold
+  source_shortlist_vector: [0.9998292, 0.1696489, 0.1079415, 0.4164748, 0.5008141, 0.5237328, 0.4259336, 0.3225141, 0.9275192]
+  selected_vector: [0.84985482, 0.1696489, 0.1079415, 0.4164748, 0.5008141, 0.5237328, 0.4259336, 0.3225141, 0.9275192]
+  payload_bits: 32
+  arithmetic_precision_bits: 128
+
+message_seeds: [11, 23, 37, 53, 71]
+
+design_metrics:
+  design_eve_calibration:
+    linear_adversarial_auc: 0.6183432119763888
+    forest_adversarial_auc: 0.6608398668731765
+  validation:
+    bits_per_transition_range: [0.2438103859, 0.2451143937]
+    completion_rate_range: [0.1080353867, 0.1116637450]
+    worst_adversarial_auc_range: [0.5771322035, 0.5855302009]
+    post_divergence_dead_ends_across_five_seeds: 0
+    worst_point_seed: 71
+    worst_seed_bootstrap_10000:
+      point_estimate: 0.5855302009
+      ci95: [0.5818121045, 0.5894834123]
+      max_observed: 0.5933592492
