@@ -1,0 +1,30 @@
+schema_version: 1
+dataset_id: geolife_cells
+role: boundary_condition
+selection_region: policy_validation_screening_only
+source_submission_snapshot_commit: 2d97df289ae1faaf05c0c7bb656b94a8e6dab898
+may_change_after_holdout: false
+retuning_after_snapshot: forbidden
+
+claim_boundary:
+  certified_operating_point: false
+  independent_holdout_claim: false
+  interpretation: low_entropy_and_temporal_cold_start_boundary_condition
+
+observed_design_properties:
+  cover_transitions: 12228821
+  eve_transitions: 4530160
+  validation_transitions: 3856347
+  cover_sources: 57531
+  viable_sources: 55490
+  validation_unseen_source_event_fraction_approx: 0.094
+  zero_payload_feature_difference: 0.0
+  zero_payload_adversarial_auc: 0.5
+  design_eve_linear_adversarial_auc_approx: 0.58865
+  design_eve_forest_adversarial_auc_approx: 0.63180
+
+screening_only:
+  - {opportunity_scale: 1.00, bits_per_transition: 0.01014, worst_adversarial_auc: 0.60057}
+  - {opportunity_scale: 0.90, bits_per_transition: 0.00968, worst_adversarial_auc: 0.58535}
+  - {opportunity_scale: 0.85, bits_per_transition: 0.00963, worst_adversarial_auc: 0.58721}
+  - {opportunity_scale: 0.75, bits_per_transition: 0.00948, worst_adversarial_auc: 0.57217}
