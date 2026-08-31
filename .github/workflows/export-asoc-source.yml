@@ -1,0 +1,28 @@
+name: Export ASOC source
+
+on:
+  push:
+    branches:
+      - asoc-v2-causal-control
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact branch state
+        uses: actions/checkout@v4
+      - name: Record export commit
+        run: git rev-parse HEAD > ASOC_EXPORT_COMMIT.txt
+      - name: Upload source artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: asoc-v2-source-${{ github.sha }}
+          retention-days: 3
+          if-no-files-found: error
+          path: |
+            ASOC_EXPORT_COMMIT.txt
+            code
+            experiments
+            docs
+            README.md
+            pytest.ini
