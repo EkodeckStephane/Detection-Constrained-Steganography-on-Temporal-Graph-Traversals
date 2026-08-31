@@ -1,0 +1,68 @@
+schema_version: 1
+status: pre_holdout_confirmatory_extension
+submission_snapshot_commit: 2d97df289ae1faaf05c0c7bb656b94a8e6dab898
+submission_snapshot_path: experiments/asoc_v2/submission_snapshot.yaml
+final_holdout_opened: false
+
+scientific_decisions:
+  geolife:
+    role: boundary_condition
+    retuning_after_submission_snapshot: forbidden
+    certified_operating_point_claim: false
+    interpretation: low_entropy_and_temporal_cold_start_limit_of_the_primary_controller
+  t_drive:
+    role: primary_mobility_validation_regime
+    retuning_after_submission_snapshot: forbidden
+  actor_action:
+    datasets: [tgbl-wiki, mooc, lastfm]
+    retuning_after_submission_snapshot: forbidden
+
+pre_holdout_freeze_requirements:
+  required_exact_policy_documents:
+    - tgbl-wiki
+    - mooc
+    - lastfm
+    - t_drive_cells
+  geolife_policy_document_required: false
+  each_policy_document_must_record:
+    - dataset_id
+    - selection_region
+    - selected_policy
+    - message_seeds
+    - design_metrics
+    - source_commit_sha
+    - may_change_after_holdout
+  required_selection_region: policy_validation
+  may_change_after_holdout: false
+  freeze_manifest_fingerprint_required: true
+  submission_snapshot_sha256_required: true
+  protocol_sha256_required: true
+  split_manifest_sha256_required: true
+  policy_bundle_sha256_required: true
+
+confirmatory_eves:
+  training_rule: fit_only_on_frozen_pre_holdout_adversary_training_data
+  preprocessing_rule: vocabulary_and_all_fit_statistics_use_training_data_only
+  test_only_identifiers: map_to_oov
+  policy_feedback: forbidden
+  models:
+    - mlp_public_features
+    - gru_sequence
+    - sequence_transformer_eve
+    - temporal_gnn
+    - white_box_diagnostic
+  primary_metric: adversarial_auc_max_of_auc_and_one_minus_auc
+
+holdout_opening_rule:
+  allowed_only_after_freeze_verification: true
+  opening_count: one
+  policy_changes_after_opening: forbidden
+  threshold_changes_after_opening: forbidden
+  baseline_hyperparameter_changes_after_opening: forbidden
+  narrative_selection_from_holdout: forbidden
+  geolife_role_may_change_after_holdout: false
+
+reporting:
+  submission_snapshot_remains_valid_if_extension_is_not_completed: true
+  independent_holdout_claim_allowed_only_after_successful_extension: true
+  if_confirmatory_result_exceeds_budget: report_as_confirmatory_failure_without_retuning
