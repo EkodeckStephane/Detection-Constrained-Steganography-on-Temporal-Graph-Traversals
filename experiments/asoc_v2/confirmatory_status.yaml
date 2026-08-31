@@ -1,0 +1,29 @@
+schema_version: 1
+status: closed_without_holdout_opening
+final_holdout_opened: false
+submission_snapshot_commit: 2d97df289ae1faaf05c0c7bb656b94a8e6dab898
+closure_reason: exact_pre_snapshot_actor_action_policy_documents_are_not_available_for_all_required_datasets
+scientific_rationale: reconstructing_or_reoptimizing_missing_actor_action_policies_after_the_submission_snapshot_would_be_retrospective_policy_selection_and_would_violate_the_pre_holdout_freeze_contract
+
+completed_pre_holdout_assets:
+  submission_snapshot: experiments/asoc_v2/submission_snapshot.yaml
+  protocol: experiments/asoc_v2/protocol.yaml
+  split_manifest: experiments/asoc_v2/split_manifest.yaml
+  t_drive_fixed_policy: experiments/asoc_v2/frozen_policies/t_drive_cells.yaml
+  geolife_boundary_document: experiments/asoc_v2/frozen_policies/geolife_boundary.yaml
+
+missing_exact_confirmatory_assets:
+  - tgbl-wiki
+  - mooc
+  - lastfm
+
+consequences:
+  confirmatory_freeze_manifest_created: false
+  independent_final_holdout_claim_allowed: false
+  unseen_eve_final_holdout_claim_allowed: false
+  policy_validation_snapshot_remains_submission_evidence: true
+  geolife_role: boundary_condition
+  t_drive_role: primary_full_validation_mobility_result
+  retuning_to_enable_holdout: forbidden
+
+manuscript_reporting_rule: report_policy_validation_evidence_with_cluster_aware_uncertainty_and_explicitly_state_that_the_reserved_final_holdout_was_not_opened
