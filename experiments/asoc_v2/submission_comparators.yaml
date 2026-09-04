@@ -1,0 +1,64 @@
+schema_version: 1
+status: post_snapshot_supplemental_policy_validation_comparison
+purpose: close_same_protocol_comparator_evidence_without_touching_final_holdout
+primary_policy_may_change: false
+final_holdout_access: false
+development_test_access: false
+dataset: t_drive_cells
+region: policy_validation
+cover_model: frozen_cover_train_Q_with_viability_kernel_A_plus
+entropy_scale: frozen_cover_train_weighted_q95
+payload_bits: 32
+arithmetic_precision_bits: 128
+top_k: 32
+message_seeds: [11, 23, 37, 53, 71]
+design_eves: [linear, forest]
+auc_metric: adversarial_auc_max_of_auc_and_one_minus_auc
+detector_auc_budget: 0.60
+bootstrap:
+  cluster_unit: mobility_session
+  resamples: 10000
+  confidence_level: 0.95
+selection_interpretation: post_snapshot_supplemental_policy_validation_only_not_independent_confirmation
+comparators:
+  fixed_entropy_threshold:
+    rule: embed_when_cover_train_scaled_entropy_at_or_above_threshold_and_viable_support_has_at_least_two_actions
+    threshold_grid: [0.35, 0.45, 0.55, 0.65, 0.75]
+    rate_level_bits: 4
+    reporting: report_full_grid_and_mark_best_validation_feasible_point_without_changing_primary_policy
+  hand_tuned_fuzzy:
+    rule: unoptimized_default_FuzzyRateController
+    weights:
+      opportunity_entropy_weight: 1.0
+      opportunity_payload_weight: 0.65
+      cover_entropy_weight: 1.0
+      pause_risk_weight: 1.0
+      stop_dead_end_weight: 1.0
+      abstention_cover_weight: 0.45
+      abstention_pause_weight: 0.40
+      abstention_stop_weight: 0.65
+    stop_threshold: 0.92
+    max_bits_per_transition: 4
+  detector_unaware_causal_arithmetic:
+    rule: embed_at_every_viable_state_with_at_least_two_actions_using_Q_restricted_to_A_plus
+    rate_level_bits: 4
+    detector_signal_used: false
+  random_admissible:
+    rule: embed_at_every_viable_state_with_at_least_two_actions_using_uniform_probabilities_over_the_same_deterministic_top16_A_plus_actions
+    rate_level_bits: 4
+    detector_signal_used: false
+  coupling_inspired_distribution_preserving:
+    rule: embed_at_every_viable_state_with_at_least_two_actions_using_full_Q_restricted_to_A_plus_without_rate_truncation
+    maximum_support_size: 32
+    detector_signal_used: false
+    terminology_guard: coupling_inspired_reference_not_claimed_as_an_implementation_of_a_specific_published_MEC_algorithm
+hard_gates:
+  passive_state_mismatch_rate: 0.0
+  passive_decode_success_rate: 1.0
+  post_divergence_dead_end_rate: 0.0
+  zero_payload_public_feature_difference: 0.0
+  zero_payload_adversarial_auc: 0.5
+reporting:
+  metrics: [bits_per_transition, completion_rate, adversarial_auc, auc_ci_lower, auc_ci_upper, dead_end_rate, state_mismatch_rate]
+  infeasible_points_are_reported_not_hidden: true
+  no_superiority_claim_without_same_protocol_evidence: true
